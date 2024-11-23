@@ -38,12 +38,10 @@ const registrationAccount = async (payload) => {
       "Password and Confirm Password didn't match"
     );
   }
-
   const existingAuth = await Auth.findOne({ email }).lean();
   if (existingAuth?.isActive) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Email already exists");
   }
-
   if (existingAuth && !existingAuth.isActive) {
     await Promise.all([
       existingAuth.role === "USER" &&

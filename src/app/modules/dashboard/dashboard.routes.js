@@ -12,6 +12,7 @@ router
     auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
     DashboardController.getAllUsers
   ) 
+
   // Manager========================
   .get(
     "/get_all_manager",
@@ -76,7 +77,7 @@ router
     auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
     DashboardController.addFaq
   ) 
-  .get( "/get-faq", DashboardController.getFaq ) 
+  .get( "/get-faq", DashboardController.getFaq) 
   .patch(
     "/update-faq/:id",
     auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),

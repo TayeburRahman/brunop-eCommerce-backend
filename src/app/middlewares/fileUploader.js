@@ -11,22 +11,9 @@ const uploadFile = () => {
         uploadPath = "uploads/images/profile";
       }
       else if (file.fieldname === "image") {
-        uploadPath = "uploads/images/services";
-      }
-      else if (file.fieldname === "licensePlateImage") {
-        uploadPath = "uploads/images/vehicle-licenses";
-      } else if (file.fieldname === "drivingLicenseImage") {
-        uploadPath = "uploads/images/driving-licenses";
-      } else if (file.fieldname === "vehicleInsuranceImage") {
-        uploadPath = "uploads/images/insurance";
-      } else if (file.fieldname === "vehicleRegistrationCardImage") {
-        uploadPath = "uploads/images/vehicle-registration";
-      } else if (file.fieldname === "vehicleFrontImage") {
-        uploadPath = "uploads/images/vehicle-image";
-      } else if (file.fieldname === "vehicleBackImage") {
-        uploadPath = "uploads/images/vehicle-image";
-      } else if (file.fieldname === "vehicleSideImage") {
-        uploadPath = "uploads/images/vehicle-image";
+        uploadPath = "uploads/images";
+      } else if (file.fieldname === "product_image") {
+        uploadPath = "uploads/images/products";
       } else {
         uploadPath = "uploads";
       }
@@ -55,13 +42,7 @@ const uploadFile = () => {
   const fileFilter = (req, file, cb) => {
     const allowedFieldnames = [
       "profile_image",
-      "licensePlateImage",
-      "drivingLicenseImage",
-      "vehicleInsuranceImage",
-      "vehicleRegistrationCardImage",
-      "vehicleFrontImage",
-      "vehicleBackImage",
-      "vehicleSideImage",
+      'product_image',
       "image"
     ];
 
@@ -88,14 +69,8 @@ const uploadFile = () => {
     storage: storage,
     fileFilter: fileFilter,
   }).fields([
-    { name: "profile_image", maxCount: 1 },
-    { name: "licensePlateImage", maxCount: 1 },
-    { name: "drivingLicenseImage", maxCount: 1 },
-    { name: "vehicleInsuranceImage", maxCount: 1 },
-    { name: "vehicleRegistrationCardImage", maxCount: 1 },
-    { name: "vehicleFrontImage", maxCount: 1 },
-    { name: "vehicleBackImage", maxCount: 1 },
-    { name: "vehicleSideImage", maxCount: 1 },
+    { name: "profile_image", maxCount: 1 }, 
+    { name: "product_image", maxCount: 10 },
     { name: "image", maxCount: 10 },
   ]);
 

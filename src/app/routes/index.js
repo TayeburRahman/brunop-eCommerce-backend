@@ -3,9 +3,11 @@ const router = express.Router();
 const AuthRoutes = require("../modules/auth/auth.routes");
 const AdminRoutes = require("../modules/admin/admin.routes");
 const UserRoutes = require("../modules/user/user.routes");
-const PartnerRoutes = require("../modules/manager/manager.routes");
+const ManagerRoutes = require("../modules/manager/manager.routes");
 const DashboardRoutes = require("../modules/dashboard/dashboard.routes"); 
 const PaymentRoutes = require("../modules/payment/payment.routes"); 
+const ProductsRoutes = require("../modules/products/product.routes"); 
+const OrdersRoutes = require("../modules/orders/order.routers"); 
 
 const moduleRoutes = [
   {
@@ -21,12 +23,20 @@ const moduleRoutes = [
     route: UserRoutes,
   },
   {
+    path: "/products",
+    route: ProductsRoutes,
+  },
+  {
+    path: "/orders",
+    route: OrdersRoutes,
+  },
+  {
     path: "/dashboard",
     route: DashboardRoutes,
   },
   {
-    path: "/partner",
-    route: PartnerRoutes,
+    path: "/manager",
+    route: ManagerRoutes,
   },  
   {
     path: "/payment",

@@ -37,6 +37,10 @@ const ManagerSchema = new Schema(
       type: String,
       default: null,
     },
+    location: {
+      type: String,
+      default: null,
+    },
     date_of_birth: {
       type: String,
       default: null,

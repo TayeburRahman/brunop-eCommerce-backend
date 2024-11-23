@@ -4,8 +4,7 @@ const { ENUM_USER_ROLE } = require("../../../utils/enums");
 const { uploadFile } = require("../../middlewares/fileUploader");
 const { AuthController } = require("../auth/auth.controller");
 
-const router = express.Router();
-
+const router = express.Router(); 
 router
   .post("/register", AuthController.registrationAccount)
   .post("/activate-user", AuthController.activateAccount)

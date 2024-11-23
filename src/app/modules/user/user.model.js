@@ -2,6 +2,21 @@ const mongoose = require("mongoose");
 
 const { Schema, model } = mongoose;
 
+const addressSchema = new Schema({ 
+    name: {
+      type: String,
+      default: null,
+    },
+    contact_no: {
+      type: String,
+      default: null,
+    },
+    delivery_address: {
+      type: String,
+      default: null,
+    } 
+  });
+
 const UserSchema = new Schema(
   {
     authId: {
@@ -26,9 +41,13 @@ const UserSchema = new Schema(
       default: null,
     }, 
     address: {
-      type: String,
+      type: addressSchema,
       default: null,
     }, 
+    location: {
+      type: String,
+      default: null,
+    },  
     city: {
       type: String,
       default: null,
