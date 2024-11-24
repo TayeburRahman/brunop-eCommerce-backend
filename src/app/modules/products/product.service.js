@@ -28,7 +28,6 @@ const Products = require("./product.model");
 
 //==Products ========================
 
-
 const getProductDetails = async (params) => {
   const { id } = params;
   if (!id) {
