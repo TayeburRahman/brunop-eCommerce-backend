@@ -42,7 +42,7 @@ const getProductDetails = async (params) => {
   }
   return result;
 };
-
+ 
 const createProduct = async (req) => {
   const files = req.files || {};  
   const payload = req.body;
@@ -98,7 +98,7 @@ const deleteProduct= async (params) => {
   }
   return `Delete Product Id: ${result._id}`;
 };
-  
+ 
 const updateProduct = async (req) => {
   const files = req.files || {};  
   const payload = req.body;
@@ -139,7 +139,7 @@ const updateProduct = async (req) => {
 
   return updatedProduct;
 };
-
+ 
 const getAllProducts= async () => { 
   const result = await Products.find({})
   if (!result) {
@@ -147,7 +147,7 @@ const getAllProducts= async () => {
   }
   return result;
 };
-
+ 
 // --Favorite ----------------------------
 const toggleFavorite = async (request) => {
   const { productId } = request.query;

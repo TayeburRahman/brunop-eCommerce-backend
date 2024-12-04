@@ -182,13 +182,6 @@ const updateFaq = catchAsync(async (req, res ) => {
     data: result,
   });
 });
-
- 
-
- 
- 
-
-
  
 
 const DashboardController = {
