@@ -63,6 +63,15 @@ const toggleFavorite = catchAsync(async (req, res) => {
   });
 });
 // -----------------------
+const getUserFavorite = catchAsync(async (req, res) => {
+  const result = await ProductsService.getUserFavorite(req);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: " Get My Favorite Products Successfully",
+    data: result,
+  });
+});
 
 const ProductController = { 
   createProduct,
@@ -70,7 +79,9 @@ const ProductController = {
   deleteProduct,
   getProductDetails, 
   getAllProducts,
-  toggleFavorite
+  toggleFavorite,
+  getUserFavorite,
+   
  
 };
 

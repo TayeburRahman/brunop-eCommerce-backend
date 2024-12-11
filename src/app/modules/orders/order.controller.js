@@ -32,11 +32,69 @@ const productAddToCart = catchAsync(async (req, res) => {
     });
   });
 
+  const getUserAddress = catchAsync(async (req, res) => {
+    const result = await OrdersService.getUserAddress(req.query);
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Address Get Successfully",
+      data: result,
+    });
+  });
+
+  const checkUserStatus = catchAsync(async (req, res) => {
+    const result = await OrdersService.checkUserStatus(req.query);
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Check Status Successfully",
+      data: result,
+    });
+  });
+
+  const createOrder = catchAsync(async (req, res) => {
+    const result = await OrdersService.createOrder(req);
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Check Status Successfully",
+      data: result,
+    });
+  });
+
+  const getPastOrders = catchAsync(async (req, res) => {
+    const result = await OrdersService.getPastOrders(req.user);
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Get Successfully",
+      data: result,
+    });
+  });
+  const getCurrentOrders = catchAsync(async (req, res) => {
+    const result = await OrdersService.getCurrentOrders(req.user);
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Get Successfully",
+      data: result,
+    });
+  });
+
+   
+
+   
+
 
 const OrdersController = {  
     productAddToCart,
     getUserCartData,
-    updateAddress
+    updateAddress,
+    getUserAddress,
+    checkUserStatus,
+    createOrder,
+    getPastOrders,
+    getCurrentOrders
 };
 
 module.exports = { OrdersController };

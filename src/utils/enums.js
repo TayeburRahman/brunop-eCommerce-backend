@@ -10,6 +10,10 @@ const ENUM_MANAGER_AC_STATUS = {
   APPROVED: "approved",
   DECLINED: "declined",
 };
+const ENUM_CUSTOMER_TYPE = {
+  REGULAR: "REGULAR",
+  PREMIUM: "PREMIUM", 
+};
 
 const ENUM_SOCKET_EVENT = {
   CONNECT: "connection",
@@ -23,6 +27,7 @@ const ENUM_SOCKET_EVENT = {
   
 };
 
+// --------------------
 const ENUM_SERVICE_STATUS = {
   PENDING: "pending",
   ACCEPTED: "accepted",
@@ -41,28 +46,8 @@ const ENUM_SERVICE_STATUS = {
   DELIVERED:"delivered", 
 };
 
-const ENUM_SERVICE_TYPE = {
-  GOODS: "Goods",
-  WASTE: "Waste",
-  SECOND_HAND_ITEMS: "Second-hand items",
-  RECYCLABLE_MATERIALS: "Recyclable materials",
-};
-
-const ENUM_ADMIN_ACCESS = {
-  ACC_TO_AUCTION_MANAGE: "accTo_auction_manage",
-  ACC_TO_USER_MANAGE: "accTo_user_manage",
-  ACC_TO_PARTNER_MANAGE: "accTo_partner_manage",
-  ACC_TO_TRANSACTION: "accTo_transaction",
-  ACC_TO_CATEGORY_MANAGE: "accTo_category_manage",
-  ACC_TO_REVIEW_CONVERSATION: "accTo_review_conversation",
-  ACC_TO_BANK_TRANSFER: "accTo_bank_transfer",
-  ACC_TO_VARIABLE_MANAGE: "accTo_variable_manage", //
-  ACC_TO_SUPPORT: "accTo_support",
-  ACC_TO_SETTINGS: "accTo_settings",
-  ACC_TO_EDIT: "accTo_editor",//
-  ACC_TO_ADMIN_MANAGE: "accTo_admin_manage",//
-  ACC_TO_NOTIFICATION_MANAGE: "accTo_notifications_manage",//
-};
+ 
+ 
 
 const ENUM_PAYMENT_STATUS = {};
 
@@ -71,8 +56,7 @@ module.exports = {
   ENUM_USER_ROLE,
   ENUM_MANAGER_AC_STATUS,
   ENUM_SOCKET_EVENT,
-  ENUM_SERVICE_STATUS,
-  ENUM_SERVICE_TYPE,
-  ENUM_PAYMENT_STATUS,
-  ENUM_ADMIN_ACCESS
+  ENUM_SERVICE_STATUS, 
+  ENUM_PAYMENT_STATUS, 
+  ENUM_CUSTOMER_TYPE
 };

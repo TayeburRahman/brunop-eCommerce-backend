@@ -67,6 +67,11 @@ const UserSchema = new Schema(
       type: Number,
       default: 0,
     },
+    customerType: {
+      type: String,
+      enum: ["REGULAR", "PREMIUM"],
+      default:'REGULAR',
+    },
     status: {
       type: String,
       enum: ["active", "deactivate"],

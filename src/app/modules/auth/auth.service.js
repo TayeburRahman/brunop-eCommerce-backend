@@ -591,20 +591,20 @@ const updateProfile = async (req) => {
   }
 
   let profile_image;
-  let cover_image;
+  // let cover_image;
 
   if (files?.profile_image) {
     profile_image = `/images/profile/${files.profile_image[0].filename}`;
   }
 
-  if (files?.cover_image) {
-    cover_image = `/images/cover/${files.cover_image[0].filename}`;
-  }
+  // if (files?.cover_image) {
+  //   cover_image = `/images/cover/${files.cover_image[0].filename}`;
+  // }
 
   const updatedData = {
     ...data,
     ...(profile_image && { profile_image }),
-    ...(cover_image && { cover_image }),
+    // ...(cover_image && { cover_image }),
   };
 
   await Auth.findByIdAndUpdate(authId, { name: updatedData.name }, { new: true });

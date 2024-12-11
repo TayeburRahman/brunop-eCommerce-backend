@@ -38,6 +38,14 @@ router
   auth(ENUM_USER_ROLE.USER, ENUM_USER_ROLE.MANAGER),
   ProductController.toggleFavorite
 )
+
+.get(
+  "/my-favorite", 
+  auth(ENUM_USER_ROLE.USER, ENUM_USER_ROLE.MANAGER),
+  ProductController.getUserFavorite
+)
+
+ 
  
 
 module.exports = router;

@@ -148,7 +148,7 @@ const getAllProducts= async () => {
   return result;
 };
  
-// --Favorite ----------------------------
+//=Favorite ===============================
 const toggleFavorite = async (request) => {
   const { productId } = request.query;
   const { userId } = request.user;
@@ -178,6 +178,17 @@ const toggleFavorite = async (request) => {
   return updatedProduct;
 };
 
+const getUserFavorite = async (request) => {
+  const { userId } = request.user; 
+  const favoriteProducts = await Products.find({
+    favorite: userId
+  }); 
+  return favoriteProducts;
+};
+
+
+
+
  
 
 
@@ -190,7 +201,8 @@ const ProductsService = {
   deleteProduct, 
   updateProduct, 
   getAllProducts,
-  toggleFavorite
+  toggleFavorite,
+  getUserFavorite
 };
 
 module.exports = { ProductsService };
