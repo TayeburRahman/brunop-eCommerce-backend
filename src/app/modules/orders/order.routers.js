@@ -42,7 +42,20 @@ router.patch(
     auth(ENUM_USER_ROLE.USER, ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.MANAGER), 
     OrdersController.getCurrentOrders
   )
+  .get(
+    "/get-all", 
+    auth( ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.MANAGER), 
+    OrdersController.getAllOrders
+  )
+  .patch(
+    "/update-status", 
+    auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.MANAGER), 
+    OrdersController.updateStatus
+  )
 
+   
+
+   
    
 
    

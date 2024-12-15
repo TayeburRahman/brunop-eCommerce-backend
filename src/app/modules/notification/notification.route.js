@@ -1,16 +1,28 @@
-const express = require("express");
-const auth = require("../../middlewares/auth");
- 
-const { notificationController } = require("./notificaiton.controller");
+const express = require("express"); 
+const { NotificationController } = require("./notificaiton.controller");
 const checkAdminAccess = require("../../middlewares/checkAdminAccess");
+const { ENUM_USER_ROLE } = require("../../../utils/enums");
+const auth = require("../../middlewares/auth");
 
 const router = express.Router();
 
-router.get(
-  "/admin",
-  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.DRIVER, ENUM_USER_ROLE.USER),
- 
-  notificationController.getAllNotification
+router  
+.post(
+  "/create-feedback",
+  auth(ENUM_USER_ROLE.USER),
+  NotificationController.createFeedBacks
+)
+.patch(
+  "/replay-feedback",
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.MANAGER),
+  NotificationController.replayFeedback
+)
+.get(
+  "/feedback",
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.MANAGER),
+  NotificationController.allFeedback
 );
+ 
+ 
 
 module.exports = router;

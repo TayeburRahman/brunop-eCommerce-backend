@@ -39,6 +39,10 @@ const ordersSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    email:{
+      type: String,
+      required: true,
+    }, 
     items: {
       type: [itemSchema],
       required: true,

@@ -42,5 +42,11 @@ router
     AuthController.deleteMyProfile
   )
 
+  .get(
+    "/user-profile",
+    auth(ENUM_USER_ROLE.MANAGER, ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN), 
+    AuthController.profileDetails
+  )
+
 
 module.exports = router;

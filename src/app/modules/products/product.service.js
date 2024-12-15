@@ -1,6 +1,7 @@
 const httpStatus = require("http-status");
 const ApiError = require("../../../errors/ApiError"); 
 const Products = require("./product.model");
+const QueryBuilder = require("../../../builder/queryBuilder");
 
 // cron.schedule("* * * * *", async () => {
 //   try {
@@ -140,14 +141,21 @@ const updateProduct = async (req) => {
   return updatedProduct;
 };
  
-const getAllProducts= async () => { 
-  const result = await Products.find({})
-  if (!result) {
-    throw new ApiError(httpStatus.NOT_FOUND, `Product not found!`);
-  }
-  return result;
+const getAllProducts= async (req) => { 
+  const query = req.query; 
+
+  const userQuery = new QueryBuilder(Products.find(), query)
+    .search(["name", "description"])
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const result = await userQuery.modelQuery;
+  const meta = await userQuery.countTotal();
+  
+  return {result, meta};
 };
- 
 //=Favorite ===============================
 const toggleFavorite = async (request) => {
   const { productId } = request.query;

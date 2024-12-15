@@ -72,6 +72,10 @@ const UserSchema = new Schema(
       enum: ["REGULAR", "PREMIUM"],
       default:'REGULAR',
     },
+    premiumRequest:{
+      type: Boolean,
+      default: false,
+    },
     status: {
       type: String,
       enum: ["active", "deactivate"],

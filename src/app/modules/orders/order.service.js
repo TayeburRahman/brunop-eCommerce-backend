@@ -2,6 +2,8 @@ const ApiError = require("../../../errors/ApiError");
 const Products = require("../products/product.model");
 const { Carts, Orders } = require("./order.model");
 const User = require("../user/user.model");
+const QueryBuilder = require("../../../builder/queryBuilder");
+const { populate } = require("../auth/auth.model");
 
 const productAddToCart = async (req) => {
   const { userId } = req.user;  
@@ -139,9 +141,16 @@ const createOrder = async (req) => {
     throw new ApiError(400, "All required fields are missing.");
   }
 
+  const userDB = await User.findById(user)
+
+  if (!userDB) {
+    throw new ApiError(404, "User not found.");
+  }
+
   try {
     const newOrder = new Orders({
       user: user,
+      email:userDB.email,
       items,
       total_amount: total_amount,
       deliveryFee,
@@ -171,7 +180,6 @@ const getPastOrders = async (payload) => {
 
   return orders;
 };
-
 
 const getCurrentOrders = async (payload) => {
   const { userId } = payload;
@@ -208,6 +216,57 @@ const getCurrentOrders = async (payload) => {
 
   return currentOrders;
 };
+// Admin======================================
+const getAllOrders = async (req) => {
+  const query = req.query;
+
+  const orderQuery = new QueryBuilder(
+    Orders.find()
+      .populate({
+        path: "user",  
+      }),
+    query
+  )
+    .search(["email", "status"])  
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const result = await orderQuery.modelQuery;
+  const meta = await orderQuery.countTotal();
+
+  return { result, meta };
+};
+ 
+
+const updateStatus = async (req) => {
+  const { status, orderId } = req.query; 
+
+    if (!status || !orderId) {
+      throw new ApiError(400, "Status and Order ID are required.");
+    }
+
+    const validStatuses = ["Pending", "Processing", "Shipping", "Delivered", "Cancelled"];
+    if (!validStatuses.includes(status)) {
+      throw new ApiError(400, `Invalid status. Valid statuses are: ${validStatuses.join(", ")}`);
+    }
+
+    const order = await Orders.findById(orderId);
+
+    if (!order) {
+      throw new ApiError(404, "Order not found.");
+    }
+    order.status = status;
+    await order.save();
+
+    return  {
+      message: `Order ${status} updated successfully`,
+      data: order,
+    };
+ 
+};
+
 
 
 
@@ -219,7 +278,9 @@ const OrdersService = {
   checkUserStatus,
   createOrder,
   getPastOrders,
-  getCurrentOrders
+  getCurrentOrders,
+  getAllOrders,
+  updateStatus
 }
 
 module.exports = OrdersService;

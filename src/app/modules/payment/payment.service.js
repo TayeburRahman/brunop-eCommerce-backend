@@ -5,6 +5,7 @@ const { ENUM_PAYMENT_STATUS, ENUM_USER_ROLE } = require("../../../utils/enums");
 const config = require("../../../config");
 const { Transaction } = require("./payment.model");
 const { Orders } = require("../orders/order.model");
+const QueryBuilder = require("../../../builder/queryBuilder");
 const stripe = require("stripe")(config.stripe.stripe_secret_key);  
  
 
@@ -58,12 +59,31 @@ const paymentSuccessAndSave = async (payload) => {
   return { payment: subscriptionPlan, transaction };
 };
 
+const getTransitionList = async (req) => { 
+  const query = req.query;
+  const userQuery = new QueryBuilder(Transaction.find()
+  .populate("orderId")
+  .populate("userId") 
+  , query)
+  .search(['userId.name', 'userId.email', 'orderId'])
+  .filter()
+  .sort()
+  .paginate()
+  .fields();
 
- 
+const result = await userQuery.modelQuery;
+const meta = await userQuery.countTotal();
+
+return {result, meta}
+
+}
+
+
  
 const PaymentService = {
   makePaymentIntent, 
-  paymentSuccessAndSave
+  paymentSuccessAndSave,
+  getTransitionList
 }
 
 module.exports = PaymentService;

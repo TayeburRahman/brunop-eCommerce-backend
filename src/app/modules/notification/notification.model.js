@@ -1,21 +1,15 @@
-const { Schema, default: mongoose } = require("mongoose");
+const { Schema, default: mongoose } = require("mongoose"); 
 const { ENUM_NOTIFICATION_TYPE } = require("../../../utils/enums");
 
 const notificationSchema = new Schema(
   {
-    orderId: {
-      type: Schema.Types.ObjectId,
-      // required: true,
-      ref: "Job",
+    getId: {
+      type: String,  
     },
     userId: {
-      type: String, 
+      type: Schema.Types.ObjectId, 
       ref: "User",
-    },
-    driverId: {
-      type: String, 
-      ref: "Driver",
-    },
+    }, 
     title: {
       type: String,
       required: true,
@@ -24,10 +18,14 @@ const notificationSchema = new Schema(
       type: String,
       required: true,
     }, 
-    // otp: {
-    //   type: Number,
-    //   default: null,
-    // },
+    data:{
+      type: Object,
+    }, 
+    type: {
+      type: String,
+      enum: ENUM_NOTIFICATION_TYPE,
+      required: true,
+    },
     seen: {
       type: Boolean,
       default: false,
@@ -37,7 +35,35 @@ const notificationSchema = new Schema(
     timestamps: true,
   }
 );
+const Notification = new mongoose.model("Notification", notificationSchema); 
 
-const Notification = new mongoose.model("Notification", notificationSchema);
+const feedbackSchema = new Schema(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,  
+      ref: "User",
+    }, 
+    name: {
+      type: String,
+      required: true,
+    },
+    message: {
+      type: String,
+      required: true,
+    }, 
+    replayed:{
+      type: String,
+    },
+    reply:  {
+      type: Boolean,
+      default: false,
+    }
+  },
+  {
+    timestamps: true,
+  }
+);
 
-module.exports = Notification;
+const Feedback = new mongoose.model("Feedback", feedbackSchema); 
+module.exports = { Feedback, Notification };
+

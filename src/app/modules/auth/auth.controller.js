@@ -126,6 +126,16 @@ const resetPassword = catchAsync(async (req, res) => {
 });
 
 const myProfile = catchAsync(async (req, res) => {
+  const result = await AuthService.myProfile(req);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Successful!",
+    data: result,
+  });
+});
+
+const profileDetails = catchAsync(async (req, res) => {
   const result = await AuthService.profileDetails(req);
   sendResponse(res, {
     statusCode: 200,
@@ -169,7 +179,8 @@ const AuthController = {
   resendCodeForgotAccount,
   myProfile,
   updateProfile,
-  deleteMyProfile
+  deleteMyProfile,
+  profileDetails
 };
 
 module.exports = { AuthController };

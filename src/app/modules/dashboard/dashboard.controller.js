@@ -182,6 +182,78 @@ const updateFaq = catchAsync(async (req, res ) => {
     data: result,
   });
 });
+
+const getHomePage = catchAsync(async (req, res ) => {
+  const result = await DashboardService.getHomePage(req); 
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Successfully!',
+    data: result,
+  });
+});
+ 
+const incomeOverview = catchAsync(async (req, res ) => {
+  const result = await DashboardService.incomeOverview(req.query); 
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Successfully!',
+    data: result,
+  });
+});
+
+const getUserGrowth = catchAsync(async (req, res ) => {
+  const result = await DashboardService.getUserGrowth(req.query); 
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Successfully!',
+    data: result,
+  });
+});
+ 
+const getUserList = catchAsync(async (req, res ) => {
+  const result = await DashboardService.getUserList(req); 
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Successfully!',
+    data: result,
+  });
+});
+
+const sendPremiumRequest = catchAsync(async (req, res ) => {
+  const result = await DashboardService.sendPremiumRequest(req); 
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Successfully!',
+    data: result,
+  });
+});
+
+const paddingPremiumRequest = catchAsync(async (req, res ) => {
+  const result = await DashboardService.paddingPremiumRequest(req); 
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Successfully!',
+    data: result,
+  });
+});
+
+const cancelPremiumRequest = catchAsync(async (req, res ) => {
+  const result = await DashboardService.cancelPremiumRequest(req); 
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Request Cancel Successfully!',
+    data: result,
+  });
+});
+
+ 
  
 
 const DashboardController = {
@@ -202,7 +274,14 @@ const DashboardController = {
   addFaq,
   deleteFaq,
   getFaq,
-  updateFaq
+  updateFaq,
+  getHomePage,
+  incomeOverview,
+  getUserGrowth,
+  getUserList,
+  sendPremiumRequest,
+  paddingPremiumRequest,
+  cancelPremiumRequest
 };
 
 module.exports = { DashboardController };

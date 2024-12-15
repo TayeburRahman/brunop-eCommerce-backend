@@ -44,7 +44,7 @@ const deleteProduct = catchAsync(async (req, res) => {
 });
 
 const getAllProducts = catchAsync(async (req, res) => { 
-  const result = await ProductsService.getAllProducts();
+  const result = await ProductsService.getAllProducts(req);
   sendResponse(res, {
     statusCode: 200,
     success: true,

@@ -46,6 +46,20 @@ const ENUM_SERVICE_STATUS = {
   DELIVERED:"delivered", 
 };
 
+
+const ENUM_NOTIFICATION_TYPE = {
+  PREMIUM_REQUEST: "premiumRequest",
+  NONE: "none"
+}
+
+const ENUM_ORDER_STATUS = { 
+  NONE: "none",
+  PENDING: "Pending",
+  PROCESSING: "Processing",
+  SHIPPING: "Shipping",
+  DELIVERED: "Delivered",
+  CANCELLED: "Cancelled",
+};
  
  
 
@@ -58,5 +72,7 @@ module.exports = {
   ENUM_SOCKET_EVENT,
   ENUM_SERVICE_STATUS, 
   ENUM_PAYMENT_STATUS, 
-  ENUM_CUSTOMER_TYPE
+  ENUM_CUSTOMER_TYPE,
+  ENUM_NOTIFICATION_TYPE,
+  ENUM_ORDER_STATUS
 };

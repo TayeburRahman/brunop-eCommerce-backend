@@ -8,6 +8,9 @@ const DashboardRoutes = require("../modules/dashboard/dashboard.routes");
 const PaymentRoutes = require("../modules/payment/payment.routes"); 
 const ProductsRoutes = require("../modules/products/product.routes"); 
 const OrdersRoutes = require("../modules/orders/order.routers"); 
+const AddsRoutes = require("../modules/media/media.routes");
+const NotificationRoutes = require("../modules/notification/notification.route");
+ 
 
 const moduleRoutes = [
   {
@@ -29,6 +32,14 @@ const moduleRoutes = [
   {
     path: "/orders",
     route: OrdersRoutes,
+  },
+  {
+    path: '/adds',
+    route: AddsRoutes,
+  },
+  {
+    path: "/notification",
+    route: NotificationRoutes,
   },
   {
     path: "/dashboard",

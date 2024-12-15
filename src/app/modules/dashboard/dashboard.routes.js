@@ -6,6 +6,47 @@ const { DashboardController } = require("./dashboard.controller");
 const router = express.Router();
 
 router
+  // Home page routes
+   .get(
+    "/count",
+    auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    DashboardController.getHomePage
+   ) 
+   .get(
+    "/user-growth",
+    auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    DashboardController.getUserGrowth
+   )
+   .get(
+    "/income-overview",
+    auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    DashboardController.incomeOverview
+   )
+
+   // user manage 
+   .get(
+    "/get_user_list",
+    auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    DashboardController.getUserList
+  )   
+  .patch(
+    "/send_premium_request",
+    auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    DashboardController.sendPremiumRequest
+  )   
+  .get(
+    "/padding_premium_request",
+    auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    DashboardController.paddingPremiumRequest
+  )  
+  .patch(
+    "/cancle_premium_request",
+    auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    DashboardController.cancelPremiumRequest
+  )  
+
+   
+    
   // user ========================
   .get(
     "/get_all_user",

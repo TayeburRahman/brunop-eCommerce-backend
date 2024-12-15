@@ -32,6 +32,7 @@ router
     "/get-all", 
     ProductController.getAllProducts
   )
+ 
 // --------------------
 .patch(
   "/favorite", 

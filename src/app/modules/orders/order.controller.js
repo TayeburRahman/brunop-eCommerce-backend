@@ -81,6 +81,28 @@ const productAddToCart = catchAsync(async (req, res) => {
     });
   });
 
+  const getAllOrders = catchAsync(async (req, res) => {
+    const result = await OrdersService.getAllOrders(req);
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Get Successfully",
+      data: result,
+    });
+  });
+
+  const updateStatus = catchAsync(async (req, res) => {
+    const result = await OrdersService.updateStatus(req);
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Update Successfully",
+      data: result,
+    });
+  });
+
+   
+   
    
 
    
@@ -94,7 +116,9 @@ const OrdersController = {
     checkUserStatus,
     createOrder,
     getPastOrders,
-    getCurrentOrders
+    getCurrentOrders,
+    getAllOrders,
+    updateStatus
 };
 
 module.exports = { OrdersController };

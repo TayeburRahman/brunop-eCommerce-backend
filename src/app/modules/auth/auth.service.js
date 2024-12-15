@@ -538,9 +538,41 @@ cron.schedule("* * * * *", async () => {
   }
 });
 
-const profileDetails = async (req) => {
+const myProfile = async (req) => {
   const { authId } = req.user; 
   // Find the authenticated user
+  const authUser = await Auth.findById(authId);
+  if (!authUser) {
+    throw new ApiError(404, "Authenticated user not found");
+  }
+
+  let userDetails = null;
+ 
+  switch (authUser.role) {
+    case ENUM_USER_ROLE.USER:
+      userDetails = await User.findOne({ authId: authUser._id }).populate("authId");
+      break;
+    case ENUM_USER_ROLE.MANAGER:
+      userDetails = await Manager.findOne({ authId: authUser._id }).populate("authId");
+      break;
+    case ENUM_USER_ROLE.ADMIN:
+      userDetails = await Admin.findOne({ authId: authUser._id }).populate("authId");
+      break;
+    default:
+      throw new ApiError(400, "Invalid role provided!");
+  }
+
+  if (!userDetails) {
+    throw new ApiError(404, "User details not found");
+  }
+
+  return userDetails;
+};
+
+const profileDetails = async (req) => {
+  const { authId } = req.query; 
+  // Find the authenticated user
+  console.log("authId==",authId)
   const authUser = await Auth.findById(authId);
   if (!authUser) {
     throw new ApiError(404, "Authenticated user not found");
@@ -671,6 +703,7 @@ const AuthService = {
   resendCodeForgotAccount,
   profileDetails,
   updateProfile,
+  myProfile,
   deleteMyProfile
 };
 
