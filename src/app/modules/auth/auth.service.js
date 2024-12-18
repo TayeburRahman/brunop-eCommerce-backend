@@ -1,7 +1,6 @@
 const bcrypt = require("bcrypt");
 const cron = require("node-cron");
 const httpStatus = require("http-status");
-
 const ApiError = require("../../../errors/ApiError");
 const config = require("../../../config");
 const { jwtHelpers } = require("../../../helpers/jwtHelpers");

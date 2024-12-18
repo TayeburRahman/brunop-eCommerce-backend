@@ -29,21 +29,35 @@ const QueryBuilder = require("../../../builder/queryBuilder");
 
 //==Products ========================
 
-const getProductDetails = async (params) => {
-  const { id } = params;
+const getProductDetails = async (req) => {
+  const { id } = req.params;
+
   if (!id) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Missing product Id");
-  } 
+  }
+ 
+  const result = await Products.findById(id);
 
-  const result = await Products.findById(id)
-  
-  // .populate("authId");
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, `Product not found!`);
   }
-  return result;
-};
  
+  const query = req.query;
+  const userQuery = new QueryBuilder(Products.find(), query)
+    .search(["name", "description"])
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+ 
+  let allProduct = await userQuery.modelQuery;
+  const meta = await userQuery.countTotal();
+ 
+  allProduct = allProduct.filter((product) => product._id.toString() !== id);
+
+  return {result, allProduct, meta };
+};
+
 const createProduct = async (req) => {
   const files = req.files || {};  
   const payload = req.body;
@@ -141,7 +155,7 @@ const updateProduct = async (req) => {
   return updatedProduct;
 };
  
-const getAllProducts= async (req) => { 
+const getAllProducts= async (req) => {  
   const query = req.query; 
 
   const userQuery = new QueryBuilder(Products.find(), query)
@@ -151,11 +165,29 @@ const getAllProducts= async (req) => {
     .paginate()
     .fields();
 
-  const result = await userQuery.modelQuery;
+    const filters = userQuery.modelQuery.getFilter(); 
+ 
+    const result = await Products.aggregate([
+      { $match: filters },  
+      {
+        $addFields: {
+          favoriteCount: {
+            $cond: {
+              if: { $isArray: "$favorite" },
+              then: { $size: "$favorite" },
+              else: 0,
+            },
+          },
+        },
+      },
+      { $sort: { favoriteCount: -1 } },  
+    ]);
+
   const meta = await userQuery.countTotal();
   
   return {result, meta};
 };
+
 //=Favorite ===============================
 const toggleFavorite = async (request) => {
   const { productId } = request.query;

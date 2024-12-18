@@ -24,7 +24,7 @@ const productUpdates = catchAsync(async (req, res ) => {
 });
 
 const getProductDetails = catchAsync(async (req, res) => {
-  const result = await ProductsService.getProductDetails(req.params);
+  const result = await ProductsService.getProductDetails(req);
   sendResponse(res, {
     statusCode: 200,
     success: true,
