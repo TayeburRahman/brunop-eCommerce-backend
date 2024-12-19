@@ -4,7 +4,7 @@ const { ENUM_USER_ROLE } = require("../../../utils/enums");
 const { uploadFile } = require("../../middlewares/fileUploader");
 const { AuthController } = require("../auth/auth.controller");
 
-const router = express.Router(); 
+const router = express.Router();
 router
   .post("/register", AuthController.registrationAccount)
   .post("/activate-user", AuthController.activateAccount)
@@ -27,7 +27,7 @@ router
   )
   .get(
     "/profile",
-    auth(ENUM_USER_ROLE.USER, ENUM_USER_ROLE.MANAGER, ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN), 
+    auth(ENUM_USER_ROLE.USER, ENUM_USER_ROLE.MANAGER, ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
     AuthController.myProfile
   )
   .patch(
@@ -38,13 +38,13 @@ router
   )
   .patch(
     "/delete-profile/:id",
-    auth(ENUM_USER_ROLE.USER, ENUM_USER_ROLE.MANAGER, ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN), 
+    auth(ENUM_USER_ROLE.USER, ENUM_USER_ROLE.MANAGER, ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
     AuthController.deleteMyProfile
   )
 
   .get(
     "/user-profile",
-    auth(ENUM_USER_ROLE.MANAGER, ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN), 
+    auth(ENUM_USER_ROLE.MANAGER, ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
     AuthController.profileDetails
   )
 

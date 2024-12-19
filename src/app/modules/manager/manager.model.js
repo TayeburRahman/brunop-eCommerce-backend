@@ -37,7 +37,7 @@ const ManagerSchema = new Schema(
       type: String,
       default: null,
     },
-    location: {
+    locations: {
       type: String,
       default: null,
     },

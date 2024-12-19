@@ -10,7 +10,7 @@ const { sendResetEmail } = require("../../../utils/sendResetMails");
 const { logger } = require("../../../shared/logger");
 const Auth = require("./auth.model");
 const createActivationToken = require("../../../utils/createActivationToken");
-const Manager= require("../manager/manager.model");
+const Manager = require("../manager/manager.model");
 const User = require("../user/user.model");
 const Admin = require("../admin/admin.model");
 const {
@@ -173,7 +173,7 @@ const loginAccount = async (payload) => {
   const { email, password } = payload;
 
   const isAuth = await Auth.isAuthExist(email);
- 
+
   if (!isAuth) {
     throw new ApiError(404, "User does not exist");
   }
@@ -191,7 +191,7 @@ const loginAccount = async (payload) => {
   }
 
   const { _id: authId } = isAuth;
- 
+
   let userDetails;
   let role;
   switch (isAuth.role) {
@@ -327,28 +327,28 @@ const resetPassword = async (req) => {
 const changePassword = async (user, payload) => {
   const { authId } = user;
   const { oldPassword, newPassword, confirmPassword } = payload;
- 
+
   if (newPassword !== confirmPassword) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Password and confirm password do not match.");
   }
- 
+
   const isUserExist = await Auth.findById(authId).select("+password");
   if (!isUserExist) {
     throw new ApiError(httpStatus.NOT_FOUND, "Account does not exist!");
   }
- 
+
   if (
     isUserExist.password &&
     !(await Auth.isPasswordMatched(oldPassword, isUserExist.password))
   ) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Old password is incorrect.");
   }
- 
+
   const hashedPassword = await bcrypt.hash(
     newPassword,
     Number(config.bcrypt_salt_rounds)
   );
- 
+
   await Auth.findByIdAndUpdate(authId, { password: hashedPassword });
 
   return { message: "Password updated successfully." };
@@ -488,7 +488,7 @@ const resendCodeForgotAccount = async (payload) => {
     </html>
       `
   );
-}; 
+};
 // Scheduled task to unset activationCode field
 cron.schedule("* * * * *", async () => {
   try {
@@ -538,7 +538,7 @@ cron.schedule("* * * * *", async () => {
 });
 
 const myProfile = async (req) => {
-  const { authId } = req.user; 
+  const { authId } = req.user;
   // Find the authenticated user
   const authUser = await Auth.findById(authId);
   if (!authUser) {
@@ -546,7 +546,7 @@ const myProfile = async (req) => {
   }
 
   let userDetails = null;
- 
+
   switch (authUser.role) {
     case ENUM_USER_ROLE.USER:
       userDetails = await User.findOne({ authId: authUser._id }).populate("authId");
@@ -569,16 +569,16 @@ const myProfile = async (req) => {
 };
 
 const profileDetails = async (req) => {
-  const { authId } = req.query; 
+  const { authId } = req.query;
   // Find the authenticated user
-  console.log("authId==",authId)
+  console.log("authId==", authId)
   const authUser = await Auth.findById(authId);
   if (!authUser) {
     throw new ApiError(404, "Authenticated user not found");
   }
 
   let userDetails = null;
- 
+
   switch (authUser.role) {
     case ENUM_USER_ROLE.USER:
       userDetails = await User.findOne({ authId: authUser._id }).populate("authId");
@@ -604,6 +604,8 @@ const updateProfile = async (req) => {
   const { files } = req;
   const { userId, authId, role } = req.user;
   const data = req.body;
+
+  console.log("edewf", data);
 
   if (!data) {
     throw new ApiError(400, "No data provided for the update.");
@@ -648,12 +650,12 @@ const updateProfile = async (req) => {
 };
 
 const deleteMyProfile = async (payload) => {
-  const { email, password } = payload; 
+  const { email, password } = payload;
   const isUserExist = await Auth.isAuthExist(email);
   if (!isUserExist) {
     throw new ApiError(404, `User with email ${email} does not exist.`);
   }
- 
+
   const isPasswordCorrect =
     isUserExist.password &&
     (await Auth.isPasswordMatched(password, isUserExist.password));
@@ -661,34 +663,34 @@ const deleteMyProfile = async (payload) => {
   if (!isPasswordCorrect) {
     throw new ApiError(402, "Password is incorrect.");
   }
- 
+
   const RoleModel =
     isUserExist.role === "MANAGER"
       ? Manager
       : isUserExist.role === "USER"
-      ? User
-      : Admin;
- 
+        ? User
+        : Admin;
+
   const session = await mongoose.startSession();
   session.startTransaction();
 
-  try { 
+  try {
     await RoleModel.deleteOne({ authId: isUserExist._id }).session(session);
- 
+
     await Auth.deleteOne({ email }).session(session);
- 
+
     await session.commitTransaction();
     session.endSession();
 
     return {
       message: `User with email ${email} has been successfully deleted.`,
     };
-  } catch (error) { 
+  } catch (error) {
     await session.abortTransaction();
-    session.endSession();  
-    throw new ApiError( 500, "An unexpected error occurred while deleting the profile. Please try again." );
+    session.endSession();
+    throw new ApiError(500, "An unexpected error occurred while deleting the profile. Please try again.");
   }
-}; 
+};
 
 const AuthService = {
   registrationAccount,

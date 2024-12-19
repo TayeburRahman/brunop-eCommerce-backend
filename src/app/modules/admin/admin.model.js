@@ -22,13 +22,13 @@ const AdminSchema = new Schema(
       default: null,
     },
     phone_number: {
-      type: String, 
+      type: String,
     },
     address: {
       type: String,
       default: null,
     },
-    location: {
+    locations: {
       type: String,
       default: null,
     },
@@ -36,55 +36,55 @@ const AdminSchema = new Schema(
       type: String,
       default: null,
     },
-    accTo_auction_manage:{
+    accTo_auction_manage: {
       type: Boolean,
       default: false,
     },
-    accTo_user_manage:{
+    accTo_user_manage: {
       type: Boolean,
       default: false,
     },
-    accTo_partner_manage:{
+    accTo_partner_manage: {
       type: Boolean,
       default: false,
     },
-    accTo_transaction:{
+    accTo_transaction: {
       type: Boolean,
       default: false,
     },
-    accTo_category_manage:{
-      type: Boolean,
-      default: false,
-    }, 
-    accTo_review_conversation:{
+    accTo_category_manage: {
       type: Boolean,
       default: false,
     },
-    accTo_bank_transfer:{
+    accTo_review_conversation: {
       type: Boolean,
       default: false,
     },
-    accTo_support:{
+    accTo_bank_transfer: {
       type: Boolean,
       default: false,
     },
-    accTo_settings:{
+    accTo_support: {
       type: Boolean,
       default: false,
     },
-    accTo_variable_manage:{
+    accTo_settings: {
       type: Boolean,
       default: false,
     },
-    accTo_editor:{
+    accTo_variable_manage: {
       type: Boolean,
       default: false,
     },
-    accTo_admin_manage:{
+    accTo_editor: {
       type: Boolean,
       default: false,
     },
-    accTo_notifications_manage:{
+    accTo_admin_manage: {
+      type: Boolean,
+      default: false,
+    },
+    accTo_notifications_manage: {
       type: Boolean,
       default: false,
     },
@@ -93,7 +93,7 @@ const AdminSchema = new Schema(
     timestamps: true,
   }
 );
- 
+
 // Statics
 const Admin = model("Admin", AdminSchema);
 

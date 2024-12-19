@@ -12,12 +12,12 @@ const itemSchema = new mongoose.Schema({
     required: true,
   },
   price: {
-    type: Number,  
+    type: Number,
     required: true,
   },
 });
 
-const addressSchema = new mongoose.Schema({ 
+const addressSchema = new mongoose.Schema({
   name: {
     type: String,
     default: null,
@@ -29,9 +29,9 @@ const addressSchema = new mongoose.Schema({
   delivery_address: {
     type: String,
     default: null,
-  } 
+  }
 });
- 
+
 const ordersSchema = new mongoose.Schema(
   {
     user: {
@@ -39,10 +39,10 @@ const ordersSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    email:{
+    email: {
       type: String,
       required: true,
-    }, 
+    },
     items: {
       type: [itemSchema],
       required: true,
@@ -51,7 +51,7 @@ const ordersSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    deliveryFee:{
+    deliveryFee: {
       type: Number,
       default: 0,
     },
@@ -61,13 +61,13 @@ const ordersSchema = new mongoose.Schema(
       default: "Pending",
     },
     paymentDetails: {
-      transactionId: { 
-        type: String, 
-        default: null 
+      transactionId: {
+        type: String,
+        default: null
       },
-      paymentMethod: { 
-        type: String, 
-        default: null 
+      paymentMethod: {
+        type: String,
+        default: null
       }
     },
     status: {

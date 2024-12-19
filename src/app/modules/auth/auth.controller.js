@@ -6,9 +6,9 @@ const config = require("../../../config");
 const registrationAccount = catchAsync(async (req, res) => {
   const { role } = await AuthService.registrationAccount(req.body);
   let message;
-      message=  role === "USER" && "Please check your email for the activation OTP code." 
-      message=  role === "MANAGER" && "Your account is awaiting admin approval." 
-      message=  role === "ADMIN" || "SUPER_ADMIN" && "Create a new admin successfully."  
+  message = role === "USER" && "Please check your email for the activation OTP code."
+  message = role === "MANAGER" && "Your account is awaiting admin approval."
+  message = role === "ADMIN" || "SUPER_ADMIN" && "Create a new admin successfully."
 
   sendResponse(res, {
     statusCode: 200,

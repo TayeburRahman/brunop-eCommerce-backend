@@ -6,7 +6,7 @@ const QueryBuilder = require("../../../builder/queryBuilder");
 const { populate } = require("../auth/auth.model");
 
 const productAddToCart = async (req) => {
-  const { userId } = req.user;  
+  const { userId } = req.user;
   const { productId, quantity } = req.body;
 
   if (!productId || !quantity) {
@@ -18,30 +18,30 @@ const productAddToCart = async (req) => {
     throw new ApiError(404, "Product not found.");
   }
 
-  let cart = await Carts.findOne({ user: userId }); 
+  let cart = await Carts.findOne({ user: userId });
 
-  if (!cart) {  
+  if (!cart) {
     cart = new Carts({
       user: userId,
-      items: [{ 
-        product: productId, 
-        quantity, 
-        price: product.price 
+      items: [{
+        product: productId,
+        quantity,
+        price: product.price
       }],
-      total_amount: product.price * quantity,  
+      total_amount: product.price * quantity,
     });
-  } else {  
+  } else {
     const existingItem = cart.items.find(
       (item) => item.product.toString() === productId
     );
 
-    if (existingItem) {  
+    if (existingItem) {
       existingItem.quantity += quantity;
-    } else {  
-      cart.items.push({ 
-        product: productId, 
-        quantity, 
-        price: product.price 
+    } else {
+      cart.items.push({
+        product: productId,
+        quantity,
+        price: product.price
       });
     }
     cart.total_amount = cart.items.reduce(
@@ -49,7 +49,7 @@ const productAddToCart = async (req) => {
       0
     );
   }
- 
+
   const savedCart = await cart.save();
   if (!savedCart) {
     throw new ApiError(500, "Failed to update cart.");
@@ -64,10 +64,10 @@ const getUserCartData = async (payload) => {
   if (!userId) {
     throw new ApiError(401, "Unauthorized access.");
   }
- 
+
   const cart = await Carts.findOne({ user: userId }).populate({
     path: "items.product",
-    select: "name price",  
+    select: "name price",
   });
 
   return cart;
@@ -80,7 +80,7 @@ const updateAddress = async (request) => {
   if (!name || !contact_no || !delivery_address) {
     throw new ApiError(400, "All fields are required.");
   }
- 
+
   const user = await User.findByIdAndUpdate(
     userId,
     {
@@ -90,7 +90,7 @@ const updateAddress = async (request) => {
         "address.delivery_address": delivery_address,
       },
     },
-    { new: true, runValidators: true }  
+    { new: true, runValidators: true }
   );
 
   if (!user) {
@@ -122,7 +122,7 @@ const checkUserStatus = async (payload) => {
   if (!user) {
     throw new ApiError(404, "User not found.");
   }
- let isMatch = false;
+  let isMatch = false;
   if (type === "REGULAR" && user.customerType === "REGULAR") {
     isMatch = true;
   }
@@ -136,8 +136,8 @@ const checkUserStatus = async (payload) => {
 };
 
 const createOrder = async (req) => {
-  const { user, items, total_amount, address, deliveryFee} = req.body;
-  if (!user ||!items ||!total_amount ||!address || !deliveryFee) {
+  const { user, items, total_amount, address, deliveryFee } = req.body;
+  if (!user || !items || !total_amount || !address || !deliveryFee) {
     throw new ApiError(400, "All required fields are missing.");
   }
 
@@ -150,7 +150,7 @@ const createOrder = async (req) => {
   try {
     const newOrder = new Orders({
       user: user,
-      email:userDB.email,
+      email: userDB.email,
       items,
       total_amount: total_amount,
       deliveryFee,
@@ -170,13 +170,13 @@ const getPastOrders = async (payload) => {
   const { userId } = payload;
   if (!userId) {
     throw new ApiError(401, "Unauthorized access! Please provide userId!");
-  } 
+  }
 
   const orders = await Orders.find({
     user: userId,
     status: { $in: ["Delivered", "Cancelled"] },
-  }).populate("user", "name email profile_image") 
-    .sort({ createdAt: -1 }); 
+  }).populate("user", "name email profile_image")
+    .sort({ createdAt: -1 });
 
   return orders;
 };
@@ -193,26 +193,26 @@ const getCurrentOrders = async (payload) => {
     throw new ApiError(404, "User not found.");
   }
 
- 
+
 
   let currentOrders;
   if (user.customerType === "PREMIUM") {
     currentOrders = await Orders.find({
       user: userId,
       status: { $in: ["Pending", "Processing", "Shipping"] },
-    }).populate("user", "name email Profile_image")  
-      .sort({ createdAt: -1 });  
-  // console.log("user.customerType", user.customerType)
-  }else if(user.customerType === "REGULAR"){
+    }).populate("user", "name email Profile_image")
+      .sort({ createdAt: -1 });
+    // console.log("user.customerType", user.customerType)
+  } else if (user.customerType === "REGULAR") {
     currentOrders = await Orders.find({
       user: userId,
       status: { $in: ["Pending", "Processing", "Shipping"] },
       // payment: "Completed",
-    }).populate("user", "name email profile_image")  
-     .sort({ createdAt: -1 });
-  }else{
+    }).populate("user", "name email profile_image")
+      .sort({ createdAt: -1 });
+  } else {
     throw new ApiError(403, "Access denied! You are not a premium or regular customer.");
-  } 
+  }
 
   return currentOrders;
 };
@@ -223,11 +223,11 @@ const getAllOrders = async (req) => {
   const orderQuery = new QueryBuilder(
     Orders.find()
       .populate({
-        path: "user",  
+        path: "user",
       }),
     query
   )
-    .search(["email", "status"])  
+    .search(["email", "status"])
     .filter()
     .sort()
     .paginate()
@@ -238,40 +238,39 @@ const getAllOrders = async (req) => {
 
   return { result, meta };
 };
- 
 
 const updateStatus = async (req) => {
-  const { status, orderId } = req.query; 
+  const { status, orderId } = req.query;
 
-    if (!status || !orderId) {
-      throw new ApiError(400, "Status and Order ID are required.");
-    }
+  if (!status || !orderId) {
+    throw new ApiError(400, "Status and Order ID are required.");
+  }
 
-    const validStatuses = ["Pending", "Processing", "Shipping", "Delivered", "Cancelled"];
-    if (!validStatuses.includes(status)) {
-      throw new ApiError(400, `Invalid status. Valid statuses are: ${validStatuses.join(", ")}`);
-    }
+  const validStatuses = ["Pending", "Processing", "Shipping", "Delivered", "Cancelled"];
+  if (!validStatuses.includes(status)) {
+    throw new ApiError(400, `Invalid status. Valid statuses are: ${validStatuses.join(", ")}`);
+  }
 
-    const order = await Orders.findById(orderId);
+  const order = await Orders.findById(orderId);
 
-    if (!order) {
-      throw new ApiError(404, "Order not found.");
-    }
-    order.status = status;
-    await order.save();
+  if (!order) {
+    throw new ApiError(404, "Order not found.");
+  }
+  order.status = status;
+  await order.save();
 
-    return  {
-      message: `Order ${status} updated successfully`,
-      data: order,
-    };
- 
+  return {
+    message: `Order ${status} updated successfully`,
+    data: order,
+  };
+
 };
 
 
 
 
 const OrdersService = {
-  productAddToCart, 
+  productAddToCart,
   getUserCartData,
   updateAddress,
   getUserAddress,

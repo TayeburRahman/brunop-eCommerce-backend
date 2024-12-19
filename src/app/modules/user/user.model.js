@@ -44,7 +44,7 @@ const UserSchema = new Schema(
       type: addressSchema,
       default: null,
     }, 
-    location: {
+    locations: {
       type: String,
       default: null,
     },  
