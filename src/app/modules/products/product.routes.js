@@ -30,6 +30,7 @@ router
   )
   .get(
     "/get-all", 
+    auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.MANAGER, ENUM_USER_ROLE.USER),  
     ProductController.getAllProducts
   )
  
