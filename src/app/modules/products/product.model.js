@@ -22,7 +22,7 @@ const ProductSchema = new Schema(
       default: null,
     },
     weight: {
-      type: String,
+      type: Number,
       default: null,
     },
     description: {

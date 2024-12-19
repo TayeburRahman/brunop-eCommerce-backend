@@ -30,18 +30,24 @@ const QueryBuilder = require("../../../builder/queryBuilder");
 //==Products ========================
 
 const getProductDetails = async (req) => {
-  const { id } = req.params;
+  const { id } = req.params;  
+  const { userId } = req.user;  
 
   if (!id) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Missing product Id");
   }
  
-  const result = await Products.findById(id);
-
-  if (!result) {
-    throw new ApiError(httpStatus.NOT_FOUND, `Product not found!`);
+  const details = await Products.findById(id).lean();
+  if (!details) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Product not found!");
   }
+  details.userFavorite = Array.isArray(details.favorite) && details.favorite.includes(userId);
+  details.favoriteCount = Array.isArray(details.favorite) ? details.favorite.length : 0;
  
+  delete details.favorite;
+
+
+
   const query = req.query;
   const userQuery = new QueryBuilder(Products.find(), query)
     .search(["name", "description"])
@@ -49,14 +55,44 @@ const getProductDetails = async (req) => {
     .sort()
     .paginate()
     .fields();
+
+  const filters = userQuery.modelQuery.getFilter();
  
-  let allProduct = await userQuery.modelQuery;
+  const result = await Products.aggregate([
+    { $match: filters },
+    {
+      $addFields: {
+        favoriteCount: {
+          $cond: {
+            if: { $isArray: "$favorite" },
+            then: { $size: "$favorite" },  
+            else: 0,
+          },
+        },
+        userFavorite: {
+          $cond: {
+            if: { $isArray: "$favorite" },
+            then: { $in: [userId, "$favorite"] }, 
+            else: false,
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        favorite: 0, 
+      },
+    },
+    { $sort: { favoriteCount: -1 } },  
+  ]);
+
   const meta = await userQuery.countTotal();
  
-  allProduct = allProduct.filter((product) => product._id.toString() !== id);
-
-  return {result, allProduct, meta };
+  const allProduct = result.filter((product) => product._id.toString() !== id);
+ 
+  return { details, allProduct, meta };
 };
+
 
 const createProduct = async (req) => {
   const files = req.files || {};  
