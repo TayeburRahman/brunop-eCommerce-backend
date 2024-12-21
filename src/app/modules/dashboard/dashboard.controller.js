@@ -252,6 +252,18 @@ const cancelPremiumRequest = catchAsync(async (req, res ) => {
     data: result,
   });
 });
+
+const acceptPremiumRequest = catchAsync(async (req, res ) => {
+  const result = await DashboardService.acceptPremiumRequest(req); 
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'User upgraded to PREMIUM successfully.',
+    data: result,
+  });
+});
+
+ 
  
 
 const DashboardController = {
@@ -279,7 +291,8 @@ const DashboardController = {
   getUserList,
   sendPremiumRequest,
   paddingPremiumRequest,
-  cancelPremiumRequest
+  cancelPremiumRequest,
+  acceptPremiumRequest
 };
 
 module.exports = { DashboardController };

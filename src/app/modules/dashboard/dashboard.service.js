@@ -672,6 +672,46 @@ const cancelPremiumRequest = async (req) => {
 
 }
 
+const acceptPremiumRequest = async (req) => {
+  const { userId } = req.query;
+ 
+  if (!userId) {
+    throw new ApiError(400, "User ID is required.");
+  }
+ 
+  const userDB = await User.findById(userId);
+  if (!userDB) {
+    throw new ApiError(404, "User not found.");
+  }
+ 
+  if (!userDB.premiumRequest) {
+    throw new ApiError(400, "User has not requested premium status.");
+  }
+ 
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    {
+      customerType: "PREMIUM",
+      premiumRequest: false,
+    },
+    { new: true }  
+  );
+
+  if (!updatedUser) {
+    throw new ApiError(500, "Failed to update user to premium.");
+  }
+ 
+  console.log(`User ${userId} was successfully upgraded to PREMIUM.`);
+
+  return {
+    message: "User upgraded to PREMIUM successfully.",
+    updatedUser,
+  };
+};
+
+
+  
+
 
 
 // Auction Management ========================
@@ -707,6 +747,7 @@ const DashboardService = {
   sendPremiumRequest,
   paddingPremiumRequest,
   cancelPremiumRequest,  
+  acceptPremiumRequest
 };
 
 module.exports = { DashboardService };

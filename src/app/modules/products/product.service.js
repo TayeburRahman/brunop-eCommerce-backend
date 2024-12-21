@@ -93,7 +93,6 @@ const getProductDetails = async (req) => {
   return { details, allProduct, meta };
 };
 
-
 const createProduct = async (req) => {
   const files = req.files || {};  
   const payload = req.body;

@@ -44,8 +44,11 @@ router
     auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
     DashboardController.cancelPremiumRequest
   )  
-
-   
+  .patch(
+    "/accept_premium_request",
+    auth(ENUM_USER_ROLE.USER,ENUM_USER_ROLE.MANAGER, ENUM_USER_ROLE.ADMIN),
+    DashboardController.acceptPremiumRequest
+  )  
     
   // user ========================
   .get(
