@@ -10,30 +10,41 @@ const makePaymentIntent = catchAsync(async (req, res) => {
     success: true,
     message: 'Payment intent create successfully',
     data: result,
-  });
-  
+  }); 
 });
 
-const paymentSuccessAndSave = catchAsync(async (req, res) => {
-  const result = await PaymentService.paymentSuccessAndSave(req.body);
+const monthlyPaymentSave = catchAsync(async (req, res) => {
+  const result = await PaymentService.monthlyPaymentSave(req.body);
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: 'Save successfully',
+    message: 'Payment intent create successfully',
     data: result,
-  });
-  
+  }); 
 });
 
-const getTransitionList = catchAsync(async (req, res) => {
-  const result = await PaymentService.getTransitionList(req);
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: 'Save successfully',
-    data: result,
-  });
-});
+ 
+
+// const paymentSuccessAndSave = catchAsync(async (req, res) => {
+//   const result = await PaymentService.paymentSuccessAndSave(req.body);
+//   sendResponse(res, {
+//     statusCode: 200,
+//     success: true,
+//     message: 'Save successfully',
+//     data: result,
+//   });
+  
+// });
+
+// const getTransitionList = catchAsync(async (req, res) => {
+//   const result = await PaymentService.getTransitionList(req);
+//   sendResponse(res, {
+//     statusCode: 200,
+//     success: true,
+//     message: 'Save successfully',
+//     data: result,
+//   });
+// });
   
  
 
@@ -41,8 +52,9 @@ const getTransitionList = catchAsync(async (req, res) => {
 
   const PaymentController = {  
     makePaymentIntent,
-    paymentSuccessAndSave,
-    getTransitionList
+    monthlyPaymentSave
+    // paymentSuccessAndSave,
+    // getTransitionList
   };
   
   module.exports = { PaymentController };

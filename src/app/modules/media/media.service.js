@@ -4,12 +4,12 @@ const ApiError = require('../../../errors/ApiError');
 const { Adds } = require('./media.model');
 
 const insertIntoDB = async (files, payload) => {
-  if (!files?.image) {
+  if (!files?.adds_image) {
     throw new ApiError(400, 'File is missing');
   }
-
-  if (files?.image) {
-    payload.image = `/images/image/${files.image[0].filename}`;
+ 
+  if (files?.adds_image) {
+    payload.adds_image = `/images/adds/${files.adds_image[0].filename}`;
   }
 
   return await Adds.create(payload);

@@ -57,7 +57,7 @@ const productAddToCart = catchAsync(async (req, res) => {
     sendResponse(res, {
       statusCode: 200,
       success: true,
-      message: "Check Status Successfully",
+      message: "Order Create Successfully",
       data: result,
     });
   });
@@ -101,7 +101,16 @@ const productAddToCart = catchAsync(async (req, res) => {
     });
   });
 
-   
+// ====================== 
+const getPremiumOderDeu = catchAsync(async (req, res) => {
+  const result = await OrdersService.getPremiumOderDeu(req);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Get Successfully",
+    data: result,
+  });
+});
    
    
 
@@ -118,7 +127,8 @@ const OrdersController = {
     getPastOrders,
     getCurrentOrders,
     getAllOrders,
-    updateStatus
+    updateStatus,
+    getPremiumOderDeu
 };
 
 module.exports = { OrdersController };

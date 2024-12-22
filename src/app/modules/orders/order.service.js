@@ -136,25 +136,33 @@ const checkUserStatus = async (payload) => {
 };
 
 const createOrder = async (req) => {
-  const { user, items, total_amount, address, deliveryFee } = req.body;
-  if (!user || !items || !total_amount || !address || !deliveryFee) {
+  const { userId } = req.user;
+  const { items, total_amount, address, deliveryFee, paymentDetails, orderType} = req.body;
+  if ( !items || !total_amount || !address || !deliveryFee || !orderType) {
     throw new ApiError(400, "All required fields are missing.");
   }
 
-  const userDB = await User.findById(user)
+  const userDB = await User.findById(userId)
 
   if (!userDB) {
     throw new ApiError(404, "User not found.");
   }
 
+  if(userDB.customerType === "REGULAR"){
+    if(!paymentDetails.transactionId || paymentDetails.paymentMethod){
+      throw new ApiError(400, "Payment details are required for REGULAR customers.");
+    }
+  }
+
   try {
     const newOrder = new Orders({
-      user: user,
+      user: userDB._id,
       email: userDB.email,
       items,
       total_amount: total_amount,
       deliveryFee,
       address,
+      orderType
     });
 
     const savedOrder = await newOrder.save();
@@ -216,6 +224,42 @@ const getCurrentOrders = async (payload) => {
 
   return currentOrders;
 };
+// Premium=====================
+const getPremiumOderDeu = async (req) => {
+  const { year, month } = req.query;
+  const userId = req.query.userId;
+ 
+  if (!year || isNaN(year)) {
+    throw new ApiError(400, "Year is required and must be a valid number.");
+  }
+  if (month && (isNaN(month) || month < 1 || month > 12)) {
+    throw new ApiError(400, "Month must be a valid number between 1 and 12.");
+  }
+
+  const user = await User.findOne({ _id: userId });
+
+  console.log(user);
+
+  if (user?.customerType !== "PREMIUM") {
+    throw new ApiError(403, "Access denied! User is not a premium customer.");
+  }
+ 
+  const startDate = new Date(year, month ? month - 1 : 0, 1); 
+  const endDate = new Date(
+    month ? new Date(year, month, 0) : new Date(year, 11, 31)  
+  );
+
+  const orders = await Orders.find({
+    user: userId,
+    payment: { $in: ["Pending"] },
+    createdAt: { $gte: startDate, $lte: endDate },
+  })
+    .populate("user", "name email profile_image")
+    .sort({ createdAt: -1 });
+
+  return orders;
+};
+
 // Admin======================================
 const getAllOrders = async (req) => {
   const query = req.query;
@@ -279,7 +323,8 @@ const OrdersService = {
   getPastOrders,
   getCurrentOrders,
   getAllOrders,
-  updateStatus
+  updateStatus,
+  getPremiumOderDeu
 }
 
 module.exports = OrdersService;

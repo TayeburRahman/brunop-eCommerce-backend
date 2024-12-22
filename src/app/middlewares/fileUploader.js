@@ -14,7 +14,11 @@ const uploadFile = () => {
         uploadPath = "uploads/images";
       } else if (file.fieldname === "product_image") {
         uploadPath = "uploads/images/products";
-      } else {
+      }  else if (file.fieldname === "adds_image") {
+        uploadPath = "uploads/images/adds";
+      } 
+      else {
+         
         uploadPath = "uploads";
       }
 
@@ -43,7 +47,8 @@ const uploadFile = () => {
     const allowedFieldnames = [
       "profile_image",
       'product_image',
-      "image"
+      "image",
+      "adds_image"
     ];
 
     if (file.fieldname === undefined) {
@@ -72,6 +77,9 @@ const uploadFile = () => {
     { name: "profile_image", maxCount: 1 }, 
     { name: "product_image", maxCount: 10 },
     { name: "image", maxCount: 10 },
+    { name: "adds_image", maxCount: 1 },
+
+     
   ]);
 
   return upload;

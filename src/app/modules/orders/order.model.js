@@ -39,6 +39,11 @@ const ordersSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    orderType: {
+      type: String, 
+      enum: ['regular', 'premium'],
+      required: true,
+    },
     email: {
       type: String,
       required: true,

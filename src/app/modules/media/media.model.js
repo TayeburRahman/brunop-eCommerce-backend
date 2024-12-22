@@ -6,7 +6,7 @@ const addsSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    image: {
+    adds_image: {
       type: String,
       required: true,
     },

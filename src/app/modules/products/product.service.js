@@ -271,12 +271,22 @@ const toggleFavorite = async (request) => {
 };
 
 const getUserFavorite = async (request) => {
-  const { userId } = request.user; 
+  const { userId } = request.user;
+ 
   const favoriteProducts = await Products.find({
-    favorite: userId
-  }); 
-  return favoriteProducts;
+    favorite: userId,
+  })
+    .select("-favorite")  
+    .lean();  
+ 
+  const productsWithFavorite = favoriteProducts.map((product) => ({
+    ...product,
+    favorite: true,
+  }));
+
+  return productsWithFavorite;
 };
+
 
 
 
