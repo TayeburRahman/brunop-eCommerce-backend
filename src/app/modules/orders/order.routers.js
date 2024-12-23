@@ -8,7 +8,7 @@ router.patch(
     auth(ENUM_USER_ROLE.MANAGER, ENUM_USER_ROLE.USER),
     OrdersController.productAddToCart
   )
- .patch(
+ .get(
     "/get-user-cart",
     auth(ENUM_USER_ROLE.MANAGER, ENUM_USER_ROLE.USER),
     OrdersController.getUserCartData

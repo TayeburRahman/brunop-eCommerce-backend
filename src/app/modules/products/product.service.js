@@ -2,70 +2,44 @@ const httpStatus = require("http-status");
 const ApiError = require("../../../errors/ApiError"); 
 const Products = require("./product.model");
 const QueryBuilder = require("../../../builder/queryBuilder");
-
-// cron.schedule("* * * * *", async () => {
-//   try {
-//     const now = new Date();
-//     const result = await Auth.updateMany(
-//       {
-//         isActive: false,
-//         expirationTime: { $lte: now },
-//         activationCode: { $ne: null },
-//       },
-//       {
-//         $unset: { activationCode: "" },
-//       }
-//     );
-
-//     if (result.modifiedCount > 0) {
-//       logger.info(
-//         `Removed activation codes from ${result.modifiedCount} expired inactive users`
-//       );
-//     }
-//   } catch (error) {
-//     logger.error("Error removing activation codes from expired users:", error);
-//   }
-// });
+ 
 
 //==Products ========================
-
 const getProductDetails = async (req) => {
-  const { id } = req.params;  
-  const { userId } = req.user;  
+  const { id } = req.params;
+  const { userId } = req.user;
 
   if (!id) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Missing product Id");
   }
- 
+
   const details = await Products.findById(id).lean();
   if (!details) {
     throw new ApiError(httpStatus.NOT_FOUND, "Product not found!");
   }
   details.userFavorite = Array.isArray(details.favorite) && details.favorite.includes(userId);
   details.favoriteCount = Array.isArray(details.favorite) ? details.favorite.length : 0;
- 
+
   delete details.favorite;
-
-
 
   const query = req.query;
   const userQuery = new QueryBuilder(Products.find(), query)
     .search(["name", "description"])
     .filter()
     .sort()
-    .paginate()
+    .paginate() 
     .fields();
 
   const filters = userQuery.modelQuery.getFilter();
- 
-  const result = await Products.aggregate([
-    { $match: filters },
+
+  const pipeline = [
+    { $match: filters }, 
     {
       $addFields: {
         favoriteCount: {
           $cond: {
             if: { $isArray: "$favorite" },
-            then: { $size: "$favorite" },  
+            then: { $size: "$favorite" }, 
             else: 0,
           },
         },
@@ -83,13 +57,24 @@ const getProductDetails = async (req) => {
         favorite: 0, 
       },
     },
-    { $sort: { favoriteCount: -1 } },  
-  ]);
+    { $sort: { favoriteCount: -1 } }, 
+    { $skip: (query.page - 1) * query.limit },  
+    { $limit: parseInt(query.limit) || 10 }, 
+  ];
+ 
+  const result = await Products.aggregate(pipeline);
+ 
+  const totalProducts = await Products.countDocuments(filters);
 
-  const meta = await userQuery.countTotal();
+  const meta = {
+    page: parseInt(query.page) || 1,
+    limit: parseInt(query.limit) || 10,
+    total: totalProducts,
+    totalPage: Math.ceil(totalProducts / (parseInt(query.limit) || 10)),
+  };
  
   const allProduct = result.filter((product) => product._id.toString() !== id);
- 
+
   return { details, allProduct, meta };
 };
 
@@ -191,53 +176,71 @@ const updateProduct = async (req) => {
 };
  
 const getAllProducts = async (req) => {
-  const query = req.query;
-  const { userId } = req.user;  
- 
-  if (!userId) {
-    throw new Error("User ID is required for this operation.");
+  try {
+    const query = req.query;
+    const { userId } = req.user;
+
+    // Check if userId exists
+    if (!userId) {
+      throw new Error("User ID is required for this operation.");
+    }
+
+    // QueryBuilder setup
+    const userQuery = new QueryBuilder(Products.find(), query)
+      .search(["name", "description"])
+      .filter()
+      .sort()
+      .paginate()
+      .fields();
+
+    // Get the filters applied by the QueryBuilder
+    const filters = userQuery.modelQuery.getFilter();
+
+    // Aggregation pipeline
+    const aggregationPipeline = [
+      { $match: filters },
+      {
+        $addFields: {
+          favoriteCount: {
+            $cond: {
+              if: { $isArray: "$favorite" },
+              then: { $size: "$favorite" },
+              else: 0,
+            },
+          },
+          userFavorite: {
+            $cond: {
+              if: { $isArray: "$favorite" },
+              then: { $in: [userId, "$favorite"] },
+              else: false,
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          favorite: 0,  // Hide favorite field in the final output
+        },
+      },
+      {
+        $sort: query.sortBy ? { [query.sortBy]: query.sortOrder === "asc" ? 1 : -1 } : { favoriteCount: -1 },
+      },
+      { $skip: (Number(query.page) - 1 || 0) * (Number(query.limit) || 10) },
+      { $limit: Number(query.limit) || 10 },
+    ];
+
+    // Execute the aggregation
+    const result = await Products.aggregate(aggregationPipeline);
+
+    // Get metadata for pagination
+    const meta = await userQuery.countTotal();
+
+    return { result, meta };
+
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    throw new Error(`Failed to fetch products: ${error.message}`);
   }
-
-  const userQuery = new QueryBuilder(Products.find(), query)
-    .search(["name", "description"])
-    .filter()
-    .sort()
-    .paginate()
-    .fields();
-
-  const filters = userQuery.modelQuery.getFilter();
-
-  const result = await Products.aggregate([
-    { $match: filters },  
-    {
-      $addFields: {
-        favoriteCount: {
-          $cond: {
-            if: { $isArray: "$favorite" },
-            then: { $size: "$favorite" }, 
-            else: 0,
-          },
-        },
-        userFavorite: {
-          $cond: {
-            if: { $isArray: "$favorite" }, 
-            then: { $in: [userId, "$favorite"] }, 
-            else: false,
-          },
-        },
-      },
-    },
-    {
-      $project: {
-        favorite: 0,  
-      },
-    },
-    { $sort: { favoriteCount: -1 } },  
-  ]);
-
-  const meta = await userQuery.countTotal();
-
-  return { result, meta };
 };
 
 //=Favorite ===============================
@@ -272,30 +275,38 @@ const toggleFavorite = async (request) => {
 
 const getUserFavorite = async (request) => {
   const { userId } = request.user;
+  const { page = 1, limit = 10 } = request.query;  
  
-  const favoriteProducts = await Products.find({
-    favorite: userId,
-  })
-    .select("-favorite")  
+  const pageNum = Number(page);
+  const limitNum = Number(limit);
+ 
+  const skip = (pageNum - 1) * limitNum;
+ 
+  const favoriteProducts = await Products.find({ favorite: userId })
+    .skip(skip)   
+    .limit(limitNum)  
+    .select("-favorite")
     .lean();  
+ 
+  const totalFavorites = await Products.countDocuments({ favorite: userId });
  
   const productsWithFavorite = favoriteProducts.map((product) => ({
     ...product,
-    favorite: true,
+    favorite: true,  
   }));
-
-  return productsWithFavorite;
+ 
+  const totalPages = Math.ceil(totalFavorites / limitNum);
+ 
+  return {
+    result: productsWithFavorite,
+    meta: {
+      page: pageNum,
+      limit: limitNum,
+      total: totalFavorites,
+      totalPage: totalPages,
+    },
+  };
 };
-
-
-
-
-
- 
-
-
-
- 
 
 const ProductsService = { 
   createProduct,
