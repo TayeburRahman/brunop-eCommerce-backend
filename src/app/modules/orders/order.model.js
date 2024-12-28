@@ -15,22 +15,40 @@ const itemSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  // delivery_fee: {
+  //   type: Number,
+  //   required: true,
+  //   default: 0,  
+  // },
 });
+ 
 
-const addressSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    default: null,
-  },
-  contact_no: {
-    type: String,
-    default: null,
-  },
-  delivery_address: {
-    type: String,
-    default: null,
-  }
-});
+const addressSchema = new mongoose.Schema({ 
+  full_name: {
+     type: String,
+    //  required: true,
+   },
+   contact_no: {
+     type: String,
+    //  required: true,
+   },
+   street_address: {
+     type: String,
+    // required: true,
+   },
+   city: {
+     type: String,
+    //  required: true,
+   },
+   state: {
+     type: String,
+    //  required: true,
+   }, 
+   toZipCode: {
+     type: String,
+    //  default: null,
+   }, 
+ });
 
 const ordersSchema = new mongoose.Schema(
   {
@@ -64,16 +82,14 @@ const ordersSchema = new mongoose.Schema(
       type: String,
       enum: ["Pending", "Completed"],
       default: "Pending",
+    }, 
+    transactionId: {
+      type: String,
+      default: null
     },
-    paymentDetails: {
-      transactionId: {
-        type: String,
-        default: null
-      },
-      paymentMethod: {
-        type: String,
-        default: null
-      }
+    paymentMethod: {
+      type: String,
+      default: 'card'
     },
     status: {
       type: String,

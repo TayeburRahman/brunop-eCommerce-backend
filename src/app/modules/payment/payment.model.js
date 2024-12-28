@@ -4,11 +4,11 @@ const { ObjectId } = Schema.Types;
 
 
 const transactionSchema = new Schema({
-    orderId: {
+    orderId: [{
         type: ObjectId,
-        ref: "Service",
+        ref: "Order",
         required: true,
-    },
+    }], 
     userId: {
         type: ObjectId,
         ref: "User",
@@ -22,25 +22,11 @@ const transactionSchema = new Schema({
         type: String,
         enum: ["Completed", "Pending", "Failed","Refunded"],
         required: true,
-    },
-    paymentDetails: {
-        email: {
-            type: String, 
-        },
-        transaction_id: {
-            type: String,
-            required: true,
-        },
-        currency: {
-            type: String,
-            default: "USD",
-        },
-        paymentMethod: {
-            type: String,
-            enum: ["Stripe", "PayPal", "ApplePay", "GooglePay"],
-            required: true,
-        },
-    },
+    }, 
+    transaction_id: {
+        type: String,
+        required: true,
+    }
 }, { timestamps: true });
 
 

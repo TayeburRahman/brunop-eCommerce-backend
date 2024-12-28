@@ -58,20 +58,17 @@ router.patch(
     auth(ENUM_USER_ROLE.USER,ENUM_USER_ROLE.ADMIN ,ENUM_USER_ROLE.MANAGER), 
     OrdersController.getPremiumOderDeu
   )
-
-   
-
-   
-
-   
-   
-
-   
-   
-   
- 
-
-// Bank Transfer Payment ------------
+  .get(
+    "/get-delivery-fee", 
+    auth(ENUM_USER_ROLE.USER,ENUM_USER_ROLE.ADMIN ,ENUM_USER_ROLE.MANAGER), 
+    OrdersController.getDeliveryFee
+  ) 
+  .get(
+    "/pay-monthly", 
+    auth(ENUM_USER_ROLE.USER), 
+    OrdersController.payMonthlyPremiumUser
+  )  
+// Bank Transfer Payment ==========
 
 
 

@@ -1,3 +1,4 @@
+const QueryBuilder = require("../../../builder/queryBuilder");
 const ApiError = require("../../../errors/ApiError");
 const { ENUM_SOCKET_EVENT, ENUM_USER_ROLE } = require("../../../utils/enums");
 const { sendEmailUser } = require("../../../utils/sendEmailUser");
@@ -66,6 +67,27 @@ const sendNotification = async ({ title, message, getId, data, userId, type }) =
     console.error("Error sending notification:", error);
   }
 };
+
+const getUserNotifications = async (req) => {
+  const { userId } = req.user;
+  const query = req.query; 
+
+  if (!userId) {
+    throw new ApiError(400, "User ID is required.");
+  }
+ 
+  const notifications = new QueryBuilder( Notification.find({ userId }),query  )
+  .search()
+  .filter()
+  .paginate()
+  .fields() 
+ 
+  const result = await notifications.modelQuery;
+  const meta = await notifications.countTotal(); 
+ 
+  return { result, meta };
+};
+
 
 const emitNotification = (receiver, notification) => {
   if (global.io) {
@@ -189,7 +211,8 @@ const NotificationService = {
   emitNotification, 
   createFeedBacks, 
   replayFeedback, 
-  allFeedback
+  allFeedback,
+  getUserNotifications
 };
 
 module.exports = { NotificationService}

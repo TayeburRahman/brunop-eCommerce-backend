@@ -221,8 +221,7 @@ const getUserGrowth = async (year) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "server error:", error.message);
   }
 };
-
-
+ 
 // User ManagerAdmin Management ========================
 const getAllUsers = async (query) => {
   const userQuery = new QueryBuilder(User.find().populate("authId"), query)

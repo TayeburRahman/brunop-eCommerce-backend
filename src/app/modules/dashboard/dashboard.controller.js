@@ -1,6 +1,7 @@
 const catchAsync = require("../../../shared/catchasync");
 const sendResponse = require("../../../shared/sendResponse");
 const { DashboardService } = require("../dashboard/dashboard.service");
+const UsaAddressData = require("./dashboard.address");
 
 const getAllUsers = catchAsync(async (req, res) => {
   const result = await DashboardService.getAllUsers(req.query);
@@ -263,6 +264,17 @@ const acceptPremiumRequest = catchAsync(async (req, res ) => {
   });
 });
 
+const getAddressData = catchAsync(async (req, res ) => {
+  const result = await UsaAddressData.getAddressData(req.body); 
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'User upgraded to PREMIUM successfully.',
+    data: result,
+  });
+});
+
+
  
  
 
@@ -292,7 +304,8 @@ const DashboardController = {
   sendPremiumRequest,
   paddingPremiumRequest,
   cancelPremiumRequest,
-  acceptPremiumRequest
+  acceptPremiumRequest,
+  getAddressData
 };
 
 module.exports = { DashboardController };

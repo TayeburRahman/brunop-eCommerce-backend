@@ -3,18 +3,34 @@ const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
 
 const addressSchema = new Schema({ 
-    name: {
+   full_name: {
       type: String,
-      default: null,
+      required: true,
     },
     contact_no: {
       type: String,
-      default: null,
+      required: true,
     },
-    delivery_address: {
+    street_address: {
+      type: String,
+     required: true,
+    },
+    city: {
+      type: String,
+      required: true,
+    },
+    state: {
+      type: String,
+      required: true,
+    }, 
+    toZipCode: {
       type: String,
       default: null,
-    } 
+    }, 
+    instruction:{
+      type: String,
+      default: null,
+    }
   });
 
 const UserSchema = new Schema(

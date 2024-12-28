@@ -63,7 +63,7 @@ const productAddToCart = catchAsync(async (req, res) => {
   });
 
   const getPastOrders = catchAsync(async (req, res) => {
-    const result = await OrdersService.getPastOrders(req.user);
+    const result = await OrdersService.getPastOrders(req);
     sendResponse(res, {
       statusCode: 200,
       success: true,
@@ -72,7 +72,7 @@ const productAddToCart = catchAsync(async (req, res) => {
     });
   });
   const getCurrentOrders = catchAsync(async (req, res) => {
-    const result = await OrdersService.getCurrentOrders(req.user);
+    const result = await OrdersService.getCurrentOrders(req);
     sendResponse(res, {
       statusCode: 200,
       success: true,
@@ -111,9 +111,27 @@ const getPremiumOderDeu = catchAsync(async (req, res) => {
     data: result,
   });
 });
-   
-   
+  
+const getDeliveryFee = catchAsync(async (req, res) => {
+  const result = await OrdersService.getDeliveryFee(req.query);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Get Successfully",
+    data: result,
+  });
+});
 
+const payMonthlyPremiumUser = catchAsync(async (req, res) => {
+  const result = await OrdersService.payMonthlyPremiumUser(req);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Payment Successfully",
+    data: result,
+  });
+});
+ 
    
 
 
@@ -128,7 +146,9 @@ const OrdersController = {
     getCurrentOrders,
     getAllOrders,
     updateStatus,
-    getPremiumOderDeu
+    getPremiumOderDeu,
+    getDeliveryFee,
+    payMonthlyPremiumUser
 };
 
 module.exports = { OrdersController };

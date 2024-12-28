@@ -7,6 +7,11 @@ const auth = require("../../middlewares/auth");
 const router = express.Router();
 
 router  
+.get(
+  "/get-user",
+  auth(ENUM_USER_ROLE.USER, ENUM_USER_ROLE.MANAGER),
+  NotificationController.getUserNotifications
+) 
 .post(
   "/create-feedback",
   auth(ENUM_USER_ROLE.USER),

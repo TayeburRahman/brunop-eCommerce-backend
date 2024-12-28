@@ -49,7 +49,9 @@ const ENUM_SERVICE_STATUS = {
 
 const ENUM_NOTIFICATION_TYPE = {
   PREMIUM_REQUEST: "premiumRequest",
-  NONE: "none"
+  NONE: "none",
+  ORDER_FAILED: "order_failed",
+  ORDER_SUCCESS: "order_success",
 }
 
 const ENUM_ORDER_STATUS = { 

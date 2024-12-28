@@ -1,7 +1,8 @@
 const express = require("express");
 const auth = require("../../middlewares/auth");
 const { ENUM_USER_ROLE } = require("../../../utils/enums");
-const { DashboardController } = require("./dashboard.controller");
+const { DashboardController } = require("./dashboard.controller"); 
+const UsaAddressData = require("./dashboard.address");
 
 const router = express.Router();
 
@@ -133,7 +134,11 @@ router
     DashboardController.deleteFaq
   )
 
-   
+  //  address ========
+  .get(
+    "/address", 
+    DashboardController.getAddressData
+  )
 
 
 // overview ========================

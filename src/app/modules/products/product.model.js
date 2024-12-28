@@ -23,7 +23,20 @@ const ProductSchema = new Schema(
     },
     weight: {
       type: Number,
+      required: true,
       default: null,
+    },
+    length:{
+      type: Number,
+      default: 0,
+    },
+    width:{
+      type: Number,
+      default: 0,
+    },
+    height:{
+      type: Number,
+      default: 0,
     },
     description: {
       type: String,

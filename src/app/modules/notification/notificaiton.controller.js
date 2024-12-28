@@ -41,6 +41,19 @@ const allFeedback = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const getUserNotifications = catchAsync(async (req, res) => {
+  const result = await NotificationService.getUserNotifications(req);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Get notification successfully",
+    data: result,
+  });
+});
+
+
+ 
  
 
  
@@ -49,7 +62,8 @@ const NotificationController = {
   getAllNotification,
   createFeedBacks,
   replayFeedback,
-  allFeedback
+  allFeedback,
+  getUserNotifications
 };
 
 module.exports = { NotificationController };
