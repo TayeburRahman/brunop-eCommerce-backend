@@ -206,11 +206,6 @@ const createOrder = async (req) => {
       throw new ApiError(400, "Payments are required for regular customers.");
     }
   }
-
-  if (userDB.customerType === "PREMIUM") {
-    orderType = 'premium'
-  }
-
   const cart = await Carts.findById(cart_id);
   if (!cart?.items) {
     throw new ApiError(400, `Cart is empty. Please contact customer support. Transaction ID: ${transactionId}`);

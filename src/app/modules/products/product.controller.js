@@ -73,6 +73,18 @@ const getUserFavorite = catchAsync(async (req, res) => {
   });
 });
 
+const getProductDetailsAdmin = catchAsync(async (req, res) => {
+  const result = await ProductsService.getProductDetailsAdmin(req);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: " Get Product Details Successfully",
+    data: result,
+  });
+});
+
+ 
+
 const ProductController = { 
   createProduct,
   productUpdates,
@@ -81,6 +93,7 @@ const ProductController = {
   getAllProducts,
   toggleFavorite,
   getUserFavorite,
+  getProductDetailsAdmin
    
  
 };

@@ -59,7 +59,7 @@ const ordersSchema = new mongoose.Schema(
     },
     orderType: {
       type: String, 
-      enum: ['regular', 'premium'],
+      enum: ['regular', 'premium',],
       required: true,
     },
     email: {

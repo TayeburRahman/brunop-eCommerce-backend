@@ -1,23 +1,19 @@
 const dotenv = require("dotenv");
 const path = require("path");
-
-// Load environment variables from .env file
+ 
 dotenv.config({
   path: path.join(process.cwd(), ".env"),
 });
-
-// Validate configuration and throw errors if required environment variables are missing
+ 
 const validateConfig = (config) => {
   if (!config.jwt.secret) {
     throw new Error("Missing JWT secret");
   }
   if (!config.database_url) {
     throw new Error("Missing database URL");
-  }
-  // Add more validation as needed
+  } 
 };
-
-// Define your configuration
+ 
 const config = {
   env: process.env.NODE_ENV,
   port: process.env.PORT,

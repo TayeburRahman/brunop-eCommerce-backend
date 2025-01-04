@@ -5,6 +5,22 @@ const QueryBuilder = require("../../../builder/queryBuilder");
  
 
 //==Products ========================
+const getProductDetailsAdmin = async (req) => {
+  const { id } = req.params; 
+
+  if (!id) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Missing product Id");
+  }
+
+  const details = await Products.findById(id).lean();
+  if (!details) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Product not found!");
+  } 
+
+  delete details.favorite;
+
+  return details;
+}
 const getProductDetails = async (req) => {
   const { id } = req.params;
   const { userId } = req.user;
@@ -80,8 +96,11 @@ const getProductDetails = async (req) => {
 
 const createProduct = async (req) => {
   const files = req.files || {};  
-  const payload = req.body;
-  const { authId } = req.user;
+  const {price, ...payload} = req.body;
+  const { authId } = req.user; 
+  payload.price = Number(price)
+
+  console.log(payload)
  
   const requiredFields = ["name", "description", "store", "price"];
  
@@ -89,15 +108,7 @@ const createProduct = async (req) => {
     if (!payload[field]) {
       throw new ApiError(400, `${field} is required.`);
     }
-  }
- 
-  if (isNaN(payload.price) || payload.price <= 0) {
-    throw new ApiError(400, "Price must be a positive number.");
-  }
-
-  if (isNaN(payload.store) || payload.store <= 0) {
-    throw new ApiError(400, "Price must be a positive number.");
-  } 
+  }  
  
   if (files.product_image) {
     payload.product_image = files.product_image.map(
@@ -315,7 +326,8 @@ const ProductsService = {
   updateProduct, 
   getAllProducts,
   toggleFavorite,
-  getUserFavorite
+  getUserFavorite,
+  getProductDetailsAdmin
 };
 
 module.exports = { ProductsService };

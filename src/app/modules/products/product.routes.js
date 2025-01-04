@@ -12,6 +12,13 @@ router
     auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.USER, ENUM_USER_ROLE.MANAGER),
     ProductController.getProductDetails
   )
+  router
+  .get(
+    "/get-details-admin/:id",
+    auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN,ENUM_USER_ROLE.MANAGER),
+    ProductController.getProductDetailsAdmin
+  )
+
   .post(
     "/create",
     uploadFile(),
