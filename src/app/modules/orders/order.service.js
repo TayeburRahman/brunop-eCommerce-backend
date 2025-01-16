@@ -249,8 +249,8 @@ const createOrder = async (req) => {
       userId,
       type: ENUM_NOTIFICATION_TYPE.SHIPPING_INFO,
       getId: savedOrder._id,
-      title: "In Completed Shipping Info.",
-      message: `Your order has been successfully created! Total Amount: ${total_amount}.`,
+      title: "Provide Shipping Information",
+      message: "To proceed with your order, provide your shipping details. Once completed, we will charge the shipping fee accordingly.",
     });
      
     return savedOrder;
