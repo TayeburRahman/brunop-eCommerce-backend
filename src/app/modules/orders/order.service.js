@@ -234,15 +234,15 @@ const createOrder = async (req) => {
         orderId: [newOrder._id],
         userId: userId,
         amount: total_amount,
-        paymentStatus: "Completed",
+        paymentStatus: "Completed", 
         transaction_id: transactionId
       })
 
     await NotificationService.sendNotification({
       userId,
       type: ENUM_NOTIFICATION_TYPE.ORDER_SUCCESS,
-      title: "Order Created Successfully",
-      message: `Your order has been successfully created! Total Amount: ${total_amount}.`,
+      title: "Your Order Has Been Placed!",
+      message: `Thank you for your purchase! Your order has been successfully created. Total Product Price: $${total_amount}.`,
     });
 
     await NotificationService.sendNotification({
@@ -263,6 +263,28 @@ const createOrder = async (req) => {
     });
     throw new ApiError(400, `Error creating order: ${error.message}`);
   }
+};
+
+const addShippingInfo = async (payload) => {
+  const { orderId, full_name, contact_no, street_address, city, state, toZipCode } = payload;
+  // if (!userId) {
+  //   throw new ApiError(401, "Unauthorized access! Please provide userId!");
+  // }
+  // const user = await User.findById(userId).select("_id name email customerType");
+  // if (!user) {
+  //   throw new ApiError(404, "User not found.");
+  // }
+  // let isMatch = false;
+  // if (type === "REGULAR" && user.customerType === "REGULAR") {
+  //   isMatch = true;
+  // }
+  // if (type === "PREMIUM" && user.customerType === "PREMIUM") {
+  //   isMatch = true;
+  // }
+  // return {
+  //   isMatch,
+  //   user
+  // };
 };
 
 const getPastOrders = async (req) => {
@@ -436,8 +458,6 @@ const payMonthlyPremiumUser = async (req) => {
   };
 };
 
-
-
 // Admin======================================
 const getAllOrders = async (req) => {
   const query = req.query;
@@ -504,6 +524,7 @@ const OrdersService = {
   getPremiumOderDeu,
   getDeliveryFee,
   payMonthlyPremiumUser,
+  checkUserStatus
    
 }
 
