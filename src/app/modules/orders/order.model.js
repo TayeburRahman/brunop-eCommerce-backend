@@ -100,6 +100,10 @@ const ordersSchema = new mongoose.Schema(
       type: addressSchema,
       required: true,
     },
+    shipping_info: {
+      type: Boolean,
+      default: false,
+    },
     notes: {
       type: String,
       default: null,

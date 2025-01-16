@@ -190,7 +190,7 @@ const createOrder = async (req) => {
   let orderType = orderTypes;
 
 
-  if (!cart_id || !total_amount || !deliveryFee || !orderType) {
+  if (!cart_id || !total_amount || !orderType) {
     throw new ApiError(400, "All required fields are missing.");
   }
 
@@ -222,7 +222,6 @@ const createOrder = async (req) => {
       email: userDB.email,
       items: cart.items,
       total_amount,
-      deliveryFee,
       address: userDB.address,
       orderType,
     });
@@ -243,8 +242,17 @@ const createOrder = async (req) => {
       userId,
       type: ENUM_NOTIFICATION_TYPE.ORDER_SUCCESS,
       title: "Order Created Successfully",
-      message: `Your order has been successfully created! Total Amount: ${total_amount}. Delivery Fee: ${deliveryFee}.`,
+      message: `Your order has been successfully created! Total Amount: ${total_amount}.`,
     });
+
+    await NotificationService.sendNotification({
+      userId,
+      type: ENUM_NOTIFICATION_TYPE.SHIPPING_INFO,
+      getId: savedOrder._id,
+      title: "In Completed Shipping Info.",
+      message: `Your order has been successfully created! Total Amount: ${total_amount}.`,
+    });
+     
     return savedOrder;
   } catch (error) {
     await NotificationService.sendNotification({
