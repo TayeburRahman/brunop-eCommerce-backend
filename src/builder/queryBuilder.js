@@ -4,7 +4,11 @@ class QueryBuilder {
     this.query = query;
   } 
 
+  
   search(searchableFields) {
+    // if (this.query.searchTerm) {
+    //   delete this.query.page;
+    // }
     const searchTerm = this.query?.searchTerm;
     if (searchTerm) {
       this.modelQuery = this.modelQuery

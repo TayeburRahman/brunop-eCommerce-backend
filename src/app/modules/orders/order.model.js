@@ -15,6 +15,10 @@ const itemSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  product_image: {
+    type: String, 
+    required: true,
+  },
   // delivery_fee: {
   //   type: Number,
   //   required: true,
@@ -50,6 +54,17 @@ const addressSchema = new mongoose.Schema({
    }, 
  });
 
+ const transitionsSchema = new mongoose.Schema({
+  product_payment: {
+    type: String, 
+    default: null,
+  },
+  shipping_payment: {
+    type: String, 
+    default: null,
+  }
+});
+
 const ordersSchema = new mongoose.Schema(
   {
     user: {
@@ -74,35 +89,41 @@ const ordersSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    deliveryFee: {
-      type: Number,
-      default: 0,
-    },
-    payment: {
-      type: String,
-      enum: ["Pending", "Completed"],
-      default: "Pending",
-    }, 
+    
     transactionId: {
-      type: String,
-      default: null
+      type: transitionsSchema,
+      default: {}
     },
     paymentMethod: {
       type: String,
       default: 'card'
-    },
-    status: {
-      type: String,
-      enum: ["Pending", "Processing", "Shipping", "Delivered", "Cancelled"],
-      default: "Pending",
-    },
+    }, 
     address: {
-      type: addressSchema,
-      required: true,
+      type: addressSchema, 
+      default: null,
     },
     shipping_info: {
       type: Boolean,
       default: false,
+    },
+    deliveryFee: {
+      type: Number,
+      default: null,
+    },
+    delivery_cost: {
+      type: String,
+      enum: ["Incomplete", "Completed"],
+      default: 'Incomplete',
+    },
+    payment: {
+      type: String,
+      enum: ["Pending", "Product-Payment-Completed", "Incomplete", "All-Payment-Completed"],
+      default: "Pending",
+    }, 
+    status: {
+      type: String,
+      enum: ["Pending", "Processing", "Shipping", "Delivered", "Cancelled"],
+      default: "Pending",
     },
     notes: {
       type: String,

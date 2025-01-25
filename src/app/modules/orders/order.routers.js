@@ -63,11 +63,21 @@ router.patch(
     auth(ENUM_USER_ROLE.USER,ENUM_USER_ROLE.ADMIN ,ENUM_USER_ROLE.MANAGER), 
     OrdersController.getDeliveryFee
   ) 
-  .get(
+  .post(
     "/pay-monthly", 
     auth(ENUM_USER_ROLE.USER), 
     OrdersController.payMonthlyPremiumUser
   )  
+  .post(
+    "/add-shipping-address", 
+    auth(ENUM_USER_ROLE.USER), 
+    OrdersController.addShippingInfo
+  )  
+  .get(
+    "/get-order-details",   
+    OrdersController.getOrderDetails
+  )  
+   
 // Bank Transfer Payment ==========
 
 

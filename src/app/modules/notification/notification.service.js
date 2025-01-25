@@ -47,7 +47,6 @@ const handleNotification = async (receiverId, role, socket, io) => {
       console.error("Invalid role provided:", role);
     }
   });
-
 };
 
 // Send notification function
@@ -201,7 +200,22 @@ const allFeedback = async (req) => {
   return result
 }
 
+const deleteFeedback = async (req) => {
+  const id = req.query.id; 
+  if (!id) {
+    throw new ApiError(400, "Feedback ID is required.");
+  }
  
+  const result = await Feedback.findByIdAndDelete(id);
+ 
+  if (!result) {
+    throw new ApiError(404, "Feedback not found.");
+  }
+  return {
+    message: "Feedback deleted successfully.",
+    feedback: result,
+  };
+};
 
 
 
@@ -212,7 +226,8 @@ const NotificationService = {
   createFeedBacks, 
   replayFeedback, 
   allFeedback,
-  getUserNotifications
+  getUserNotifications,
+  deleteFeedback
 };
 
 module.exports = { NotificationService}

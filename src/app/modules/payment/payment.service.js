@@ -47,7 +47,37 @@ const monthlyPaymentSave = async (payload) => {
   return { success: true, message: 'Payments saved successfully for all orders.' };
 };
 
+const getTransitionList = async (req) => {
+  try {
+    const query = req.query;
 
+    const searchTerm = query.searchTerm;
+    const page = query.page;
+    const limit = query.limit;
+
+    const userQuery = new QueryBuilder(
+      Transaction.find() 
+        .populate({
+          path: "userId",
+          select: "name email", 
+        }),
+      query
+    ) 
+      .filter()
+      .sort()
+      .paginate()
+      .fields();
+
+    const result = await userQuery.modelQuery;
+    const meta = await userQuery.countTotal();
+
+    return { success: true, result, meta };
+  } catch (error) {
+    console.error("Error in getTransitionList:", error.message);
+
+     
+  }
+};
 
 
 // const paymentSuccessAndSave = async (payload) => { 
@@ -84,32 +114,16 @@ const monthlyPaymentSave = async (payload) => {
 
  
 
-// const getTransitionList = async (req) => { 
-//   const query = req.query;
-//   const userQuery = new QueryBuilder(Transaction.find()
-//   .populate("orderId")
-//   .populate("userId") 
-//   , query)
-//   .search(['userId.name', 'userId.email', 'orderId'])
-//   .filter()
-//   .sort()
-//   .paginate()
-//   .fields();
-
-// const result = await userQuery.modelQuery;
-// const meta = await userQuery.countTotal();
-
-// return {result, meta}
-
-// }
+ 
 
 
  
 const PaymentService = {
   makePaymentIntent, 
   monthlyPaymentSave,
+    getTransitionList
   // paymentSuccessAndSave,
-  // getTransitionList
+ 
 }
 
 module.exports = PaymentService;

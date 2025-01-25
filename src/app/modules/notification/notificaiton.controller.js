@@ -52,7 +52,16 @@ const getUserNotifications = catchAsync(async (req, res) => {
   });
 });
 
-
+const deleteFeedback = catchAsync(async (req, res) => {
+  const result = await NotificationService.deleteFeedback(req);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Feedback deleted successfully.",
+    data: result,
+  });
+});
+ 
  
  
 
@@ -63,7 +72,8 @@ const NotificationController = {
   createFeedBacks,
   replayFeedback,
   allFeedback,
-  getUserNotifications
+  getUserNotifications,
+  deleteFeedback
 };
 
 module.exports = { NotificationController };

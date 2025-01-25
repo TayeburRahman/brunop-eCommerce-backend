@@ -7,7 +7,7 @@ const ApiError = require("../../../errors/ApiError");
 const Manager = require("../manager/manager.model");
 const Admin = require("../admin/admin.model");
 const { TermsConditions, PrivacyPolicy, Faq } = require("../manage/manage.model");
-const { ENUM_MANAGER_AC_STATUS } = require("../../../utils/enums");
+const { ENUM_MANAGER_AC_STATUS, ENUM_NOTIFICATION_TYPE } = require("../../../utils/enums");
 const { sendEmail } = require("../../../utils/sendEmail");
 const approvedBody = require("../../../mails/approvedBody");
 const { resetEmailTemplate } = require("../../../mails/reset.email");
@@ -221,7 +221,7 @@ const getUserGrowth = async (year) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "server error:", error.message);
   }
 };
- 
+
 // User ManagerAdmin Management ========================
 const getAllUsers = async (query) => {
   const userQuery = new QueryBuilder(User.find().populate("authId"), query)
@@ -309,10 +309,6 @@ const getAllManager = async (query) => {
 
   const result = await partnerQuery.modelQuery;
   const meta = await partnerQuery.countTotal();
-
-  if (!result?.length) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Manager not found");
-  }
 
   return {
     meta,
@@ -611,33 +607,33 @@ const sendPremiumRequest = async (req) => {
 const paddingPremiumRequest = async (req) => {
   const query = req.query;
 
-  const page = parseInt(query.page, 10) || 1;  
-  const limit = parseInt(query.limit, 10) || 10;  
+  const page = parseInt(query.page, 10) || 1;
+  const limit = parseInt(query.limit, 10) || 10;
   const skip = (page - 1) * limit;
 
-  const searchTerm = query.searchTerm || '';  
+  const searchTerm = query.searchTerm || '';
 
-  try { 
-    let filterQuery = { premiumRequest: true }; 
+  try {
+    let filterQuery = { premiumRequest: true };
     if (searchTerm) {
       filterQuery = {
         ...filterQuery,
         $or: [
-          { name: { $regex: searchTerm, $options: 'i' } },  
-          { email: { $regex: searchTerm, $options: 'i' } }, 
+          { name: { $regex: searchTerm, $options: 'i' } },
+          { email: { $regex: searchTerm, $options: 'i' } },
         ]
       };
     }
- 
+
     const users = await User.find(filterQuery)
       .skip(skip)
       .limit(limit)
       .exec();
- 
+
     const totalCount = await User.countDocuments(filterQuery);
- 
+
     const totalPages = Math.ceil(totalCount / limit);
- 
+
     return {
       data: users,
       meta: {
@@ -653,12 +649,12 @@ const paddingPremiumRequest = async (req) => {
   }
 };
 
-const cancelPremiumRequest = async (req) => {  
+const cancelPremiumRequest = async (req) => {
   const { userId } = req.query;
 
- if(!userId){
-   throw new Error('User ID is required');
- }
+  if (!userId) {
+    throw new Error('User ID is required');
+  }
 
   const user = await User.findByIdAndUpdate(
     userId,
@@ -673,33 +669,33 @@ const cancelPremiumRequest = async (req) => {
 
 const acceptPremiumRequest = async (req) => {
   const { userId } = req.query;
- 
+
   if (!userId) {
     throw new ApiError(400, "User ID is required.");
   }
- 
+
   const userDB = await User.findById(userId);
   if (!userDB) {
     throw new ApiError(404, "User not found.");
   }
- 
+
   if (!userDB.premiumRequest) {
     throw new ApiError(400, "User has not requested premium status.");
   }
- 
+
   const updatedUser = await User.findByIdAndUpdate(
     userId,
     {
       customerType: "PREMIUM",
       premiumRequest: false,
     },
-    { new: true }  
+    { new: true }
   );
 
   if (!updatedUser) {
     throw new ApiError(500, "Failed to update user to premium.");
   }
- 
+
   console.log(`User ${userId} was successfully upgraded to PREMIUM.`);
 
   return {
@@ -708,8 +704,88 @@ const acceptPremiumRequest = async (req) => {
   };
 };
 
+const getIncompleteShippingCost = async (req) => {
+  const query = req.query;
 
+  const orderQuery = new QueryBuilder(
+    Orders.find({delivery_cost:"Incomplete"})
+      .populate({
+        path: "user",
+      }),
+    query
+  )
+    .search(["email", "status"])
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const result = await orderQuery.modelQuery;
+  const meta = await orderQuery.countTotal();
+
+  return { result, meta };
+};
+
+const sendProvideShippingInfoNotification = async (req) => {
+  const { orderId } = req.params;
+  if (!orderId) {
+    throw new ApiError(400, "Order ID is required.");
+  }
+  const orderDb = await Orders.findById(orderId);
+  if (!orderDb) {
+    throw new ApiError(404, "User not found.");
+  }
+
+  const data = await NotificationService.sendNotification({
+    userId: orderDb.user,
+    type: ENUM_NOTIFICATION_TYPE.SHIPPING_INFO,
+    getId: orderDb._id,
+    title: "Incomplete Shipping Information",
+    message: "Please provide your shipping details. Once completed, we will charge the shipping fee accordingly.",
+  });
+
+  return data;
+}
+
+const chargeShippingCost = async (req) => {
+  const { orderId, amount} = req.query;
+  if (!orderId) {
+    throw new ApiError(400, "Order ID is required.");
+  }
+  const orderDb = await Orders.findById(orderId);
+  if (!orderDb) {
+    throw new ApiError(404, "User not found.");
+  }
+
+  if(!amount){
+    throw new ApiError(400, "Amount is required.");
+  }
+
+  const result = await Orders.findByIdAndUpdate(
+    orderId,
+    {
+      $set: { deliveryFee: amount }, 
+      $inc: { total_amount: amount },  
+    },
+    { new: true }  
+  );
   
+  if(!result){
+    throw new ApiError(500, "Failed to update order in delivery fee.");
+  }
+
+  await NotificationService.sendNotification({
+    userId: orderDb.user,
+    type: result?.orderType ==="premium"? ENUM_NOTIFICATION_TYPE.NONE: ENUM_NOTIFICATION_TYPE.SHIPPING_PAYMENT,
+    getId: orderId,
+    title: "Shipping Fee Update for Your Order",
+    message: `Dear customer, the shipping fee for your order (ID: ${orderId.slice(-8)}) has been updated to ${amount}. Please pay the shipping fee. Thank you!`,
+  });
+
+  return result;
+}
+
+
 
 
 
@@ -745,8 +821,11 @@ const DashboardService = {
   getUserList,
   sendPremiumRequest,
   paddingPremiumRequest,
-  cancelPremiumRequest,  
-  acceptPremiumRequest
+  cancelPremiumRequest,
+  acceptPremiumRequest,
+  sendProvideShippingInfoNotification,
+  chargeShippingCost,
+  getIncompleteShippingCost
 };
 
 module.exports = { DashboardService };

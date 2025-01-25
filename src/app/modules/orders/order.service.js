@@ -8,6 +8,7 @@ const { ENUM_NOTIFICATION_TYPE } = require("../../../utils/enums");
 const { NotificationService } = require("../notification/notification.service");
 const UsaAddressData = require("../dashboard/dashboard.address");
 const { Transaction } = require("../payment/payment.model");
+const httpStatus = require("http-status");
 
 const productAddToCart = async (req) => {
   const { userId } = req.user;
@@ -23,16 +24,23 @@ const productAddToCart = async (req) => {
     throw new ApiError(404, "Product not found.");
   }
 
+  const productImage = Array.isArray(product.product_image)
+    ? product.product_image[0]
+    : product.product_image;
+
   let cart = await Carts.findOne({ user: userId });
 
   if (!cart) {
     cart = new Carts({
       user: userId,
-      items: [{
-        product: productId,
-        quantity,
-        price: product.price
-      }],
+      items: [
+        {
+          product: productId,
+          quantity,
+          price: product.price,
+          product_image: productImage,
+        },
+      ],
       total_amount: product.price * quantity,
     });
   } else {
@@ -49,12 +57,18 @@ const productAddToCart = async (req) => {
         if (existingItem.quantity < 1) {
           existingItem.quantity = 1;
         }
+
+        // Update product_image if it is not already set
+        if (!existingItem.product_image) {
+          existingItem.product_image = productImage;
+        }
       }
     } else {
       cart.items.push({
         product: productId,
         quantity,
-        price: product.price
+        price: product.price,
+        product_image: productImage,
       });
     }
 
@@ -63,6 +77,7 @@ const productAddToCart = async (req) => {
       0
     );
   }
+
   const savedCart = await cart.save();
   if (!savedCart) {
     throw new ApiError(500, "Failed to update cart.");
@@ -157,8 +172,8 @@ const getDeliveryFee = async (data) => {
     length: 1,
     width: 1,
     height: 1,
-  } 
-  const result = await UsaAddressData.getBaseRates(userAddress); 
+  }
+  const result = await UsaAddressData.getBaseRates(userAddress);
   return result
 }
 
@@ -186,55 +201,74 @@ const checkUserStatus = async (payload) => {
 
 const createOrder = async (req) => {
   const { userId } = req.user;
-  const { cart_id, total_amount, deliveryFee, transactionId, orderType: orderTypes } = req.body;
+  const { cart_id, total_amount, items, type, transactionId, orderType: orderTypes, address } = req.body;
   let orderType = orderTypes;
 
-
-  if (!cart_id || !total_amount || !orderType) {
+  if (!total_amount || !orderType || !type) {
     throw new ApiError(400, "All required fields are missing.");
   }
 
+  if (address) { 
+    if (!address.full_name || !address.contact_no || !address.street_address || !address.city || !address.state) {
+      throw new ApiError(400, "Address all field are required.");
+    }
+  }
+
   const userDB = await User.findById(userId);
+ 
 
   if (!userDB) {
     throw new ApiError(404, "User not found.");
   }
 
   if (userDB.customerType === "REGULAR") {
-     orderType = 'regular'
+    orderType = 'regular'
     if (!transactionId || orderType !== "regular") {
       throw new ApiError(400, "Payments are required for regular customers.");
     }
   }
-  const cart = await Carts.findById(cart_id);
-  if (!cart?.items) {
-    throw new ApiError(400, `Cart is empty. Please contact customer support. Transaction ID: ${transactionId}`);
-  }
 
-  if (!userDB?.address?.toZipCode) {
-    throw new ApiError(404, "Please add your delivery address.");
-  }
 
+  let itemsOfProduct;
+  if (type === "signal") {
+    if (!items) {
+      throw new ApiError(400, "Items are required for signal product.");
+    }
+    itemsOfProduct = items
+  } else {
+    if (!cart_id) {
+      throw new ApiError(400, "Cart ID is required for product.");
+    }
+    const cart = await Carts.findById(cart_id);
+    itemsOfProduct = cart.items;
+  }
   try {
     const newOrder = new Orders({
-      transactionId,
+      transactionId:{ 
+        product_payment: transactionId
+      },
       user: userDB._id,
       email: userDB.email,
-      items: cart.items,
+      items: itemsOfProduct,
       total_amount,
-      address: userDB.address,
-      orderType,
+      payment: transactionId ? "Product-Payment-Completed" : "Incomplete",
+      address: address,
+      shipping_info: address ? true : false,
+      orderType
     });
 
     const savedOrder = await newOrder.save();
-    await Carts.deleteOne({ _id: cart_id })
+
+    if (cart_id) {
+      await Carts.deleteOne({ _id: cart_id })
+    }
 
     if (transactionId)
       await Transaction.create({
         orderId: [newOrder._id],
         userId: userId,
         amount: total_amount,
-        paymentStatus: "Completed", 
+        paymentStatus: "Completed",
         transaction_id: transactionId
       })
 
@@ -245,14 +279,111 @@ const createOrder = async (req) => {
       message: `Thank you for your purchase! Your order has been successfully created. Total Product Price: $${total_amount}.`,
     });
 
+    if (!address) {
+      await NotificationService.sendNotification({
+        userId,
+        type:ENUM_NOTIFICATION_TYPE.SHIPPING_INFO,
+        getId: savedOrder._id,
+        title: "Provide Shipping Information",
+        message: "To proceed with your order, provide your shipping details. Once completed, we will charge the shipping fee accordingly.",
+      });
+    }
+
+
+    return savedOrder;
+  } catch (error) {
     await NotificationService.sendNotification({
       userId,
-      type: ENUM_NOTIFICATION_TYPE.SHIPPING_INFO,
-      getId: savedOrder._id,
-      title: "Provide Shipping Information",
-      message: "To proceed with your order, provide your shipping details. Once completed, we will charge the shipping fee accordingly.",
+      type: ENUM_NOTIFICATION_TYPE.ORDER_FAILED,
+      title: "Ohh! Order Creation Failed",
+      message: `We encountered an error while creating your order. Please contact support. ${transactionId && `with Transaction ID: ${transactionId}`}`,
     });
-     
+    throw new ApiError(400, `Error creating order: ${error.message}`);
+  }
+};
+
+const shippingCostPaymentsSuccess= async (req) => {
+  const { userId } = req.user;
+  const { orderId, amount, type, transactionId, } = req.body;
+
+  if (!amount || !transactionId || !type || !orderId) {
+    throw new ApiError(400, "All required fields are missing.");
+  }
+
+  const userDB = await User.findById(userId);
+ 
+
+  if (!userDB) {
+    throw new ApiError(404, "User not found.");
+  }
+
+  if (userDB.customerType === "REGULAR") {
+    orderType = 'regular'
+    if (!transactionId || orderType !== "regular") {
+      throw new ApiError(400, "Payments are required for regular customers.");
+    }
+  }
+
+
+  let itemsOfProduct;
+  if (type === "signal") {
+    if (!items) {
+      throw new ApiError(400, "Items are required for signal product.");
+    }
+    itemsOfProduct = items
+  } else {
+    if (!cart_id) {
+      throw new ApiError(400, "Cart ID is required for product.");
+    }
+    const cart = await Carts.findById(cart_id);
+    itemsOfProduct = cart.items;
+  }
+  try {
+    const newOrder = new Orders({
+      transactionId,
+      user: userDB._id,
+      email: userDB.email,
+      items: itemsOfProduct,
+      total_amount,
+      payment: transactionId ? "Product-Payment-Completed" : "Incomplete",
+      address: address,
+      shipping_info: address ? true : false,
+      orderType
+    });
+
+    const savedOrder = await newOrder.save();
+
+    if (cart_id) {
+      await Carts.deleteOne({ _id: cart_id })
+    }
+
+    if (transactionId)
+      await Transaction.create({
+        orderId: [newOrder._id],
+        userId: userId,
+        amount: total_amount,
+        paymentStatus: "Completed",
+        transaction_id: transactionId
+      })
+
+    await NotificationService.sendNotification({
+      userId,
+      type: ENUM_NOTIFICATION_TYPE.ORDER_SUCCESS,
+      title: "Your Order Has Been Placed!",
+      message: `Thank you for your purchase! Your order has been successfully created. Total Product Price: $${total_amount}.`,
+    });
+
+    if (address) {
+      await NotificationService.sendNotification({
+        userId,
+        type: ENUM_NOTIFICATION_TYPE.SHIPPING_INFO,
+        getId: savedOrder._id,
+        title: "Provide Shipping Information",
+        message: "To proceed with your order, provide your shipping details. Once completed, we will charge the shipping fee accordingly.",
+      });
+    }
+
+
     return savedOrder;
   } catch (error) {
     await NotificationService.sendNotification({
@@ -267,46 +398,61 @@ const createOrder = async (req) => {
 
 const addShippingInfo = async (payload) => {
   const { orderId, full_name, contact_no, street_address, city, state, toZipCode } = payload;
-  // if (!userId) {
-  //   throw new ApiError(401, "Unauthorized access! Please provide userId!");
-  // }
-  // const user = await User.findById(userId).select("_id name email customerType");
-  // if (!user) {
-  //   throw new ApiError(404, "User not found.");
-  // }
-  // let isMatch = false;
-  // if (type === "REGULAR" && user.customerType === "REGULAR") {
-  //   isMatch = true;
-  // }
-  // if (type === "PREMIUM" && user.customerType === "PREMIUM") {
-  //   isMatch = true;
-  // }
-  // return {
-  //   isMatch,
-  //   user
-  // };
+
+  const requiredFields = { orderId, full_name, contact_no, street_address, city, state, toZipCode };
+  const missingFields = Object.entries(requiredFields)
+    .filter(([key, value]) => !value)
+    .map(([key]) => key);
+
+  if (missingFields.length > 0) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `The following fields are required: ${missingFields.join(', ')}`
+    );
+  }
+
+  const order = await Orders.findByIdAndUpdate(
+    orderId,
+    {
+      $set: {
+        address: {
+          full_name,
+          contact_no,
+          street_address,
+          city,
+          state,
+          toZipCode,
+        },
+        shipping_info: true,
+      },
+    },
+    { new: true, runValidators: true }
+  );
+  return {
+    order
+  };
 };
 
 const getPastOrders = async (req) => {
-  const { userId} = req.user;
-  const query = req.query; 
+  const { userId } = req.user;
+  const query = req.query;
 
   if (!userId) {
     throw new ApiError(401, "Unauthorized access! Please provide userId!");
   }
 
-  const orderQuery = new QueryBuilder( Orders.find({
+  const orderQuery = new QueryBuilder(Orders.find({
     user: userId,
     status: { $in: ["Delivered", "Cancelled"] },
   }).populate("user", "name email profile_image")
-  ,
-  query
-)
-  .sort({ createdAt: -1 })
-  .search()
-  .filter() 
-  .paginate()
-  .fields();
+    ,
+    query
+  )
+    .sort({ createdAt: -1 })
+    .search()
+    .filter()
+    .paginate()
+    .fields();
 
   const result = await orderQuery.modelQuery;
   const meta = await orderQuery.countTotal();
@@ -315,8 +461,8 @@ const getPastOrders = async (req) => {
 };
 
 const getCurrentOrders = async (req) => {
-   const { userId} = req.user;
-   const query = req.query;
+  const { userId } = req.user;
+  const query = req.query;
 
   if (!userId) {
     throw new ApiError(401, "Unauthorized access! Please provide userId!");
@@ -330,25 +476,25 @@ const getCurrentOrders = async (req) => {
 
   let orderQuery;
   if (user.customerType === "PREMIUM") {
-   orderQuery = new QueryBuilder( Orders.find({
+    orderQuery = new QueryBuilder(Orders.find({
       user: userId,
       status: { $in: ["Pending", "Processing", "Shipping"] },
     }).populate("user", "name email Profile_image"), query)
-    .search()
-    .filter() 
-    .paginate()
-    .fields()
-    .sort({ createdAt: -1 }); 
+      .search()
+      .filter()
+      .paginate()
+      .fields()
+      .sort({ createdAt: -1 });
   } else if (user.customerType === "REGULAR") {
-    orderQuery = new QueryBuilder( Orders.find({
+    orderQuery = new QueryBuilder(Orders.find({
       user: userId,
-      status: { $in: ["Pending", "Processing", "Shipping"] }, 
+      status: { $in: ["Pending", "Processing", "Shipping"] },
     }).populate("user", "name email profile_image"), query)
-    .search()
-    .filter() 
-    .paginate()
-    .fields()
-    .sort({ createdAt: -1 });
+      .search()
+      .filter()
+      .paginate()
+      .fields()
+      .sort({ createdAt: -1 });
   } else {
     throw new ApiError(403, "Access denied! You are not a premium or regular customer.");
   }
@@ -362,17 +508,17 @@ const getCurrentOrders = async (req) => {
 // Premium=====================
 const getPremiumOderDeu = async (req) => {
   const { userId, year, month, ...query } = req.query;
- 
+
   console.log("getPremiumOderDeu Input:", { year, month, query });
- 
+
   if (!year || isNaN(year)) {
     throw new ApiError(400, `Year is required and must be a valid number. Received: ${year}`);
   }
- 
+
   if (month && (isNaN(month) || month < 1 || month > 12)) {
     throw new ApiError(400, `Month must be a valid number between 1 and 12. Received: ${month}`);
   }
- 
+
   const user = await User.findOne({ _id: userId });
   if (!user) {
     throw new ApiError(404, "User not found.");
@@ -380,14 +526,15 @@ const getPremiumOderDeu = async (req) => {
   if (user.customerType !== "PREMIUM") {
     throw new ApiError(403, "Access denied! User is not a premium customer.");
   }
- 
+
   const startDate = new Date(year, month ? month - 1 : 0, 1);
   const endDate = new Date(month ? new Date(year, month, 0) : new Date(year, 11, 31));
- 
+
   const orderQuery = new QueryBuilder(
     Orders.find({
       user: userId,
-      payment: { $in: ["Pending"] },
+      payment: { $in: ["Incomplete"] }, 
+      status: { $in: ["Delivered"] },
       createdAt: { $gte: startDate, $lte: endDate },
     })
       .populate("user", "name email profile_image"),
@@ -402,10 +549,18 @@ const getPremiumOderDeu = async (req) => {
   // Execute query
   const result = await orderQuery.modelQuery;
   const meta = await orderQuery.countTotal();
- 
-  // console.log("getPremiumOderDeu Output:", { result, meta });
- 
-  return { result, meta };
+
+  const dataDb = await Orders.find({
+    user: userId,
+    payment: { $in: ["Incomplete"] }, 
+    status: { $in: ["Delivered"] },
+    createdAt: { $gte: startDate, $lte: endDate },
+  })
+    .populate("user", "name email profile_image")
+
+  const totalAmountDue = dataDb.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+
+  return { result, meta,totalAmountDue};
 };
 
 const payMonthlyPremiumUser = async (req) => {
@@ -421,10 +576,10 @@ const payMonthlyPremiumUser = async (req) => {
   if (!userDB) {
     throw new ApiError(404, "User not found.");
   }
- 
+
   const orderIds = Array.isArray(order_id) ? order_id : [order_id];
- 
-  const orders = await Orders.find({ _id: { $in: orderIds } }); 
+
+  const orders = await Orders.find({ _id: { $in: orderIds } });
 
   if (!orders || orders.length === 0) {
     throw new ApiError(404, "Orders not found.");
@@ -437,20 +592,23 @@ const payMonthlyPremiumUser = async (req) => {
         400,
         `Cart is empty for order ID: ${order._id}. Please contact customer support. Transaction ID: ${transactionId}`
       );
-    }   
-    order.transactionId = transactionId;
-    order.payment = "Completed"; 
+    }
+    order.transactionId = {  
+    product_payment: transactionId,
+    shipping_payment: order.deliveryFee !== null? transactionId: ''
+  } 
+    order.payment = order.deliveryFee !== null? "All-Payment-Completed": "Product-Payment-Completed";
     await order.save();
     updatedOrders.push(order);
-  } 
+  }
 
-     await Transaction.create({
-       orderId: order_id,
-       userId: userId,
-       amount: total_amount,
-       paymentStatus: "Completed",
-       transaction_id: transactionId
-     })
+  await Transaction.create({
+    orderId: order_id,
+    userId: userId,
+    amount: total_amount,
+    paymentStatus: "Completed",
+    transaction_id: transactionId
+  })
 
   return {
     message: "Transaction successful. Orders updated.",
@@ -484,7 +642,7 @@ const getAllOrders = async (req) => {
 const updateStatus = async (req) => {
   const { status, orderId } = req.body;
 
-  console.log("====",status, orderId);
+  console.log("====", status, orderId);
 
   if (!status || !orderId) {
     throw new ApiError(400, "Status and Order ID are required.");
@@ -510,6 +668,16 @@ const updateStatus = async (req) => {
 
 };
 
+const getOrderDetails = async (orderId) => {
+  const order = await Orders.findById(orderId)
+   .populate("user", "name email profile_image") 
+
+  if (!order) {
+    throw new ApiError(404, "Order not found.");
+  }
+
+  return order;
+}
 const OrdersService = {
   productAddToCart,
   getUserCartData,
@@ -524,8 +692,10 @@ const OrdersService = {
   getPremiumOderDeu,
   getDeliveryFee,
   payMonthlyPremiumUser,
-  checkUserStatus
-   
+  checkUserStatus,
+  addShippingInfo,
+  getOrderDetails
+
 }
 
 module.exports = OrdersService;

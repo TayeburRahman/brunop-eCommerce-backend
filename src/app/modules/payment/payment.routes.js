@@ -25,11 +25,11 @@ router
   //   auth(ENUM_USER_ROLE.USER),
   //   PaymentController.paymentSuccessAndSave,
   // )
-  // .get(
-  //   '/get-transition-list',
-  //   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
-  //   PaymentController.getTransitionList,
-  // );
+  .get(
+    '/get-transition-list',
+    auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    PaymentController.getTransitionList,
+  );
    
 
 // Bank Transfer Payment ------------

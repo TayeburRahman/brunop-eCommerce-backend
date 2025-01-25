@@ -133,14 +133,38 @@ router
     auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
     DashboardController.deleteFaq
   )
-
+  //  Shipping Fee Manage ========
+  .post(
+    "/send-provide-shipping-info-notification/:orderId",
+    auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    DashboardController.sendProvideShippingInfoNotification
+  ) 
+  .post(
+    "/charge-shipping-cost",
+    auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    DashboardController.chargeShippingCost
+  ) 
+  .get(
+    "/get-incomplete-shipping-cost",
+    auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    DashboardController.getIncompleteShippingCost
+  )
+  // ===========================
+  .get(
+    "/address", 
+    DashboardController.getAddressData
+  )
   //  address ========
   .get(
     "/address", 
     DashboardController.getAddressData
   )
 
-
 // overview ========================
+.post(
+  "/address", 
+  DashboardController.getAddressData
+)
+
 
 module.exports = router;

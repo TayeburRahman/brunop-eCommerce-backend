@@ -105,8 +105,6 @@ const getBaseRates = async () => {
     };
  
     const response = await axios.post(DHL_API_URL, data, { headers });
- 
-    console.log('Shipping Rates Response:', response.data);
     return response.data;
 
   } catch (error) { 

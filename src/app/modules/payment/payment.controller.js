@@ -23,6 +23,16 @@ const monthlyPaymentSave = catchAsync(async (req, res) => {
   }); 
 });
 
+const getTransitionList = catchAsync(async (req, res) => {
+  const result = await PaymentService.getTransitionList(req);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Get successfully',
+    data: result,
+  });
+});
+
  
 
 // const paymentSuccessAndSave = catchAsync(async (req, res) => {
@@ -36,15 +46,7 @@ const monthlyPaymentSave = catchAsync(async (req, res) => {
   
 // });
 
-// const getTransitionList = catchAsync(async (req, res) => {
-//   const result = await PaymentService.getTransitionList(req);
-//   sendResponse(res, {
-//     statusCode: 200,
-//     success: true,
-//     message: 'Save successfully',
-//     data: result,
-//   });
-// });
+ 
   
  
 
@@ -52,9 +54,10 @@ const monthlyPaymentSave = catchAsync(async (req, res) => {
 
   const PaymentController = {  
     makePaymentIntent,
-    monthlyPaymentSave
+    monthlyPaymentSave,
+    getTransitionList
     // paymentSuccessAndSave,
-    // getTransitionList
+     
   };
   
   module.exports = { PaymentController };

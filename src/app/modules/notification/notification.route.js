@@ -26,8 +26,12 @@ router
   "/feedback",
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.MANAGER),
   NotificationController.allFeedback
-);
- 
+)
+.delete(
+  "/delete-feedback",
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.MANAGER),
+  NotificationController.deleteFeedback
+)
  
 
 module.exports = router;

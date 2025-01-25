@@ -14,6 +14,7 @@ app.use(
   cors({
     origin: [
       "http://192.168.12.90:3002", 
+      "http://10.0.60.45:3002"
     ],
     credentials: true,
   })
@@ -30,7 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(express.static("uploads")); // Serve static files from 'uploads'
+app.use(express.static("uploads"));  
 
 // All Routes
 app.use("/", routes);

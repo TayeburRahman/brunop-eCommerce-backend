@@ -5,6 +5,7 @@ const notificationSchema = new Schema(
   {
     getId: {
       type: String,  
+      default:null
     },
     userId: {
       type: Schema.Types.ObjectId, 

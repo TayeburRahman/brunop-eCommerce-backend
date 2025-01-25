@@ -22,27 +22,38 @@ const getOrderList = async (user) => {
   return result;
 };
 
-const getOrderListManagers = async (req) => { 
-  const query = req.query 
+const getOrderListManagers = async (req) => {
+  const query = req.query;
+  let statusFilter;
+ 
+  if (query?.status === "Delivered") {
+    statusFilter = { status: { $in: ["Delivered", "Cancelled"] } };
+  } else { 
+    statusFilter = { status: { $nin: ["Delivered", "Cancelled"] } };
+  }
+ 
+  const orderFilter = { ...statusFilter };
+ 
   const orderQuery = new QueryBuilder(
-    Orders.find()
+    Orders.find(orderFilter)
       .populate({
         path: "user",
-        select:"name email customerType profile_image"
+        select: "name email customerType profile_image",
       }),
     query
   )
-    .search(["email", "status"])
-    .filter()
-    .sort()
-    .paginate()
-    .fields();
-
+    .search(["email", "status"])  
+    .filter() 
+    .sort()  
+    .paginate()  
+    .fields(); 
+ 
   const result = await orderQuery.modelQuery;
   const meta = await orderQuery.countTotal();
-
-  return { result, meta };  
+ 
+  return { result, meta };
 };
+
 
 const orderDetails = async (req) => {
   const orderId = req.params.id;  

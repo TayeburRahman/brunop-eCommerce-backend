@@ -35,7 +35,7 @@ const blockUnblockAuthProfile = catchAsync(async (req, res) => {
 });
 
 const getAllManager= catchAsync(async (req, res) => {
-  const result = await DashboardService.getAllManager();
+  const result = await DashboardService.getAllManager(req.query);
   sendResponse(res, {
     statusCode: 200,
     success: true,
@@ -274,6 +274,43 @@ const getAddressData = catchAsync(async (req, res ) => {
   });
 });
 
+const sendProvideShippingInfoNotification = catchAsync(async (req, res ) => {
+  const result = await DashboardService.sendProvideShippingInfoNotification(req); 
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Notification send successfully.',
+    data: result,
+  });
+});
+
+const chargeShippingCost = catchAsync(async (req, res ) => {
+  const result = await DashboardService.chargeShippingCost(req); 
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Send Successfully.',
+    data: result,
+  });
+});
+
+const getIncompleteShippingCost = catchAsync(async (req, res ) => {
+  const result = await DashboardService.getIncompleteShippingCost(req); 
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'get Successfully.',
+    data: result,
+  });
+});
+
+ 
+
+
+ 
+
+ 
+
 
  
  
@@ -305,7 +342,10 @@ const DashboardController = {
   paddingPremiumRequest,
   cancelPremiumRequest,
   acceptPremiumRequest,
-  getAddressData
+  getAddressData,
+  sendProvideShippingInfoNotification,
+  chargeShippingCost,
+  getIncompleteShippingCost
 };
 
 module.exports = { DashboardController };

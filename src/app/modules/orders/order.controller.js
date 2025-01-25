@@ -131,9 +131,28 @@ const payMonthlyPremiumUser = catchAsync(async (req, res) => {
     data: result,
   });
 });
- 
-   
 
+const getOrderDetails = catchAsync(async (req, res) => {
+  const result = await OrdersService.getOrderDetails(req.query.orderId);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Get Details Successfully",
+    data: result,
+  });
+}); 
+
+const addShippingInfo = catchAsync(async (req, res) => {
+  const result = await OrdersService.addShippingInfo(req.body);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Shipping Info Add Successfully",
+    data: result,
+  });
+});
+   
+ 
 
 const OrdersController = {  
     productAddToCart,
@@ -148,7 +167,9 @@ const OrdersController = {
     updateStatus,
     getPremiumOderDeu,
     getDeliveryFee,
-    payMonthlyPremiumUser
+    payMonthlyPremiumUser,
+    addShippingInfo,
+    getOrderDetails
 };
 
 module.exports = { OrdersController };

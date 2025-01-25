@@ -53,6 +53,7 @@ const ENUM_NOTIFICATION_TYPE = {
   ORDER_FAILED: "order_failed",
   ORDER_SUCCESS: "order_success",
   SHIPPING_INFO: "shipping_info",
+  SHIPPING_PAYMENT: "shipping_payment",
 }
 
 const ENUM_ORDER_STATUS = { 
