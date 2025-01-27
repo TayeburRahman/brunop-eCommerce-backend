@@ -88,8 +88,7 @@ const ordersSchema = new mongoose.Schema(
     total_amount: {
       type: Number,
       required: true,
-    },
-    
+    }, 
     transactionId: {
       type: transitionsSchema,
       default: {}

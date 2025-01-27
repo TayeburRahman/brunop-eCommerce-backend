@@ -151,7 +151,16 @@ const addShippingInfo = catchAsync(async (req, res) => {
     data: result,
   });
 });
-   
+const shippingCostPaymentsSuccess = catchAsync(async (req, res) => {
+  const result = await OrdersService.shippingCostPaymentsSuccess(req);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Payment Successfully",
+    data: result,
+  });
+});
+ 
  
 
 const OrdersController = {  
@@ -169,7 +178,8 @@ const OrdersController = {
     getDeliveryFee,
     payMonthlyPremiumUser,
     addShippingInfo,
-    getOrderDetails
+    getOrderDetails,
+    shippingCostPaymentsSuccess
 };
 
 module.exports = { OrdersController };

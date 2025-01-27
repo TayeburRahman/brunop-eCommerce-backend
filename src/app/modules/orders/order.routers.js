@@ -77,6 +77,15 @@ router.patch(
     "/get-order-details",   
     OrdersController.getOrderDetails
   )  
+
+  .post(
+    "/shipping_cost_payments_success",   
+    auth(ENUM_USER_ROLE.USER,ENUM_USER_ROLE.ADMIN ,ENUM_USER_ROLE.MANAGER), 
+    OrdersController.shippingCostPaymentsSuccess
+  )  
+
+
+   
    
 // Bank Transfer Payment ==========
 

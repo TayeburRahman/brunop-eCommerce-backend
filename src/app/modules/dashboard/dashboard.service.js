@@ -67,12 +67,16 @@ const getHomePage = async (req, res) => {
 };
 
 const incomeOverview = async (year) => {
-  try {
+  try {  
     const currentYear = new Date().getFullYear();
-    const selectedYear = year || currentYear;
+    const selectedYear = Number(year.year) || currentYear;
+    console.log(selectedYear);
     const startDate = new Date(`${selectedYear}-01-01T00:00:00.000Z`);
     const endDate = new Date(`${selectedYear + 1}-01-01T00:00:00.000Z`);
 
+    console.log("Start Date:", startDate);
+    console.log("End Date:", endDate);
+ 
     const incomeOverview = await Transaction.aggregate([
       {
         $match: {
@@ -98,19 +102,11 @@ const incomeOverview = async (year) => {
       },
     ]);
 
+    console.log("Aggregated Income Data:", incomeOverview);
+ 
     const months = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     ];
 
     const result = Array.from({ length: 12 }, (_, i) => {
@@ -122,20 +118,22 @@ const incomeOverview = async (year) => {
         month: months[i],
         totalIncome: monthData.totalIncome,
       };
-    });
-
-    console.log(result);
-
+    }); 
+ 
     return {
       year: selectedYear,
       data: result,
     };
-  } catch (error) {
-    console.error("Error in getIncomeOverviewByYear function:", error);
-
-    throw new ApiError(httpStatus.BAD_REQUEST, "Service not found:", error.message);
+  } catch (error) { 
+    console.error("Error in incomeOverview function:", error.stack || error);
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Service not found: ${error.message}`
+    );
   }
 };
+ 
+
 
 const getYearRange = (year) => {
   const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
@@ -147,9 +145,8 @@ const getYearRange = (year) => {
 const getUserGrowth = async (year) => {
   try {
     const currentYear = new Date().getFullYear();
-    const selectedYear = year || currentYear;
-
-    // Use getYearRange function to get the start and end dates for the year
+    const selectedYear = Number(year.year) || currentYear;
+ 
     const { startDate, endDate } = getYearRange(selectedYear);
 
     const monthlyUserGrowth = await Auth.aggregate([
@@ -342,7 +339,7 @@ const deleteProfile = async (payload) => {
 
   const isUserExist = await Auth.isAuthExist(email);
   if (!isUserExist) {
-    throw new ApiError(404, `User with email ${email} does not exist.`);
+    throw new ApiError(404, `Email ${email} does not exist.`);
   }
 
   const RoleModel =
@@ -494,11 +491,13 @@ const getFaq = async () => {
   return await Faq.find();
 };
 
-// User Manage =================
+// User Manage ==================
 const getUserList = async (req) => {
   const query = req.query
 
-  const userQuery = new QueryBuilder(User.find(), query)
+  const userQuery = new QueryBuilder(User.find()
+  .populate('authId')
+  , query)
     .search(['email', 'name'])
     .filter()
     .sort()
@@ -614,7 +613,7 @@ const paddingPremiumRequest = async (req) => {
   const searchTerm = query.searchTerm || '';
 
   try {
-    let filterQuery = { premiumRequest: true };
+    let filterQuery = { premiumRequest: true, customerType: 'REGULAR' };
     if (searchTerm) {
       filterQuery = {
         ...filterQuery,

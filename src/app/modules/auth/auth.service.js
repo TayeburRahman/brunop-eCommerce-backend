@@ -683,7 +683,7 @@ const deleteMyProfile = async (payload) => {
     session.endSession();
 
     return {
-      message: `User with email ${email} has been successfully deleted.`,
+      message: `${isUserExist.role} with email ${email} has been successfully deleted.`,
     };
   } catch (error) {
     await session.abortTransaction();

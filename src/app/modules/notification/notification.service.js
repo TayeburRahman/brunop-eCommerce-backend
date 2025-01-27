@@ -79,6 +79,7 @@ const getUserNotifications = async (req) => {
   .search()
   .filter()
   .paginate()
+  .sort({ createdAt: -1 })
   .fields() 
  
   const result = await notifications.modelQuery;

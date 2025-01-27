@@ -269,27 +269,27 @@ const createOrder = async (req) => {
         userId: userId,
         amount: total_amount,
         paymentStatus: "Completed",
-        transaction_id: transactionId
+        transaction_id: transactionId,
+        paymentType: "Products Cost"
       })
 
-    await NotificationService.sendNotification({
+   const nnn = await NotificationService.sendNotification({
       userId,
       type: ENUM_NOTIFICATION_TYPE.ORDER_SUCCESS,
+      getId: savedOrder._id,
       title: "Your Order Has Been Placed!",
       message: `Thank you for your purchase! Your order has been successfully created. Total Product Price: $${total_amount}.`,
     });
 
     if (!address) {
-      await NotificationService.sendNotification({
+   const all=    await NotificationService.sendNotification({
         userId,
         type:ENUM_NOTIFICATION_TYPE.SHIPPING_INFO,
         getId: savedOrder._id,
         title: "Provide Shipping Information",
         message: "To proceed with your order, provide your shipping details. Once completed, we will charge the shipping fee accordingly.",
-      });
-    }
-
-
+      }); 
+    } 
     return savedOrder;
   } catch (error) {
     await NotificationService.sendNotification({
@@ -302,99 +302,61 @@ const createOrder = async (req) => {
   }
 };
 
-const shippingCostPaymentsSuccess= async (req) => {
+const shippingCostPaymentsSuccess = async (req) => {
   const { userId } = req.user;
-  const { orderId, amount, type, transactionId, } = req.body;
+  const { orderId, amount, transactionId } = req.body;
 
-  if (!amount || !transactionId || !type || !orderId) {
+  if (!amount || !transactionId || !orderId) {
     throw new ApiError(400, "All required fields are missing.");
   }
 
-  const userDB = await User.findById(userId);
- 
-
-  if (!userDB) {
-    throw new ApiError(404, "User not found.");
-  }
-
-  if (userDB.customerType === "REGULAR") {
-    orderType = 'regular'
-    if (!transactionId || orderType !== "regular") {
-      throw new ApiError(400, "Payments are required for regular customers.");
-    }
-  }
-
-
-  let itemsOfProduct;
-  if (type === "signal") {
-    if (!items) {
-      throw new ApiError(400, "Items are required for signal product.");
-    }
-    itemsOfProduct = items
-  } else {
-    if (!cart_id) {
-      throw new ApiError(400, "Cart ID is required for product.");
-    }
-    const cart = await Carts.findById(cart_id);
-    itemsOfProduct = cart.items;
-  }
   try {
-    const newOrder = new Orders({
-      transactionId,
-      user: userDB._id,
-      email: userDB.email,
-      items: itemsOfProduct,
-      total_amount,
-      payment: transactionId ? "Product-Payment-Completed" : "Incomplete",
-      address: address,
-      shipping_info: address ? true : false,
-      orderType
-    });
-
-    const savedOrder = await newOrder.save();
-
-    if (cart_id) {
-      await Carts.deleteOne({ _id: cart_id })
+    const userDB = await User.findById(userId);
+    if (!userDB) {
+      throw new ApiError(404, "User not found.");
     }
 
-    if (transactionId)
-      await Transaction.create({
-        orderId: [newOrder._id],
-        userId: userId,
-        amount: total_amount,
-        paymentStatus: "Completed",
-        transaction_id: transactionId
-      })
+    const order = await Orders.findById(orderId);
+    if (!order) {
+      throw new ApiError(404, "Order not found.");
+    }
 
+    order.transactionId = { ...order.transactionId, shipping_payment: transactionId };
+    order.payment = "All-Payment-Completed";
+    order.delivery_cost = "Completed";
+
+    const savedOrder = await order.save();
+ 
+    await Transaction.create({
+      orderId: [order._id],
+      userId: userId,
+      amount: amount,
+      paymentStatus: "Completed",
+      transaction_id: transactionId,
+      paymentType: "Shipping Cost",
+    });
+ 
     await NotificationService.sendNotification({
       userId,
       type: ENUM_NOTIFICATION_TYPE.ORDER_SUCCESS,
-      title: "Your Order Has Been Placed!",
-      message: `Thank you for your purchase! Your order has been successfully created. Total Product Price: $${total_amount}.`,
+      getId: order._id,
+      title: "Shipping Payment Successful!",
+      message: `Thank you for your purchase! Your shipping payment was successful. Shipping fee paid: $${amount}.`,
     });
 
-    if (address) {
-      await NotificationService.sendNotification({
-        userId,
-        type: ENUM_NOTIFICATION_TYPE.SHIPPING_INFO,
-        getId: savedOrder._id,
-        title: "Provide Shipping Information",
-        message: "To proceed with your order, provide your shipping details. Once completed, we will charge the shipping fee accordingly.",
-      });
-    }
-
-
     return savedOrder;
-  } catch (error) {
+  } catch (error) { 
     await NotificationService.sendNotification({
       userId,
       type: ENUM_NOTIFICATION_TYPE.ORDER_FAILED,
-      title: "Ohh! Order Creation Failed",
-      message: `We encountered an error while creating your order. Please contact support. ${transactionId && `with Transaction ID: ${transactionId}`}`,
+      title: "Ohh! Payment Failed",
+      message: `Payment Save failed. Please contact support. ${transactionId ? `Transaction ID: ${transactionId}` : ""}`,
     });
-    throw new ApiError(400, `Error creating order: ${error.message}`);
+
+    throw new ApiError(400, `Error processing payment: ${error.message}`);
   }
 };
+
 
 const addShippingInfo = async (payload) => {
   const { orderId, full_name, contact_no, street_address, city, state, toZipCode } = payload;
@@ -607,7 +569,8 @@ const payMonthlyPremiumUser = async (req) => {
     userId: userId,
     amount: total_amount,
     paymentStatus: "Completed",
-    transaction_id: transactionId
+    transaction_id: transactionId,
+    paymentType: "Premium Payment"
   })
 
   return {
@@ -694,7 +657,8 @@ const OrdersService = {
   payMonthlyPremiumUser,
   checkUserStatus,
   addShippingInfo,
-  getOrderDetails
+  getOrderDetails,
+  shippingCostPaymentsSuccess
 
 }
 
